@@ -10,24 +10,25 @@
      КРОК 1: Замінити значення нижче на свої з Firebase Console
      Інструкція в README.md
 ═══════════════════════════════════════════════════════════════ -->
-<script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, deleteDoc, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyARlwgKAkj9bSsEHq_7oLrtmt1lESBg3H0",
-  authDomain: "bodylab-549b2.firebaseapp.com",
-  projectId: "bodylab-549b2",
-  storageBucket: "bodylab-549b2.firebasestorage.app",
+// ── Init ──
+// СЮДИ ВСТАВЛЯЄМО ТВОЇ ДАНІ
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyARlwgKAkj9bSsEHq_7oLrtmt1lESBg3H0",
+  authDomain:        "bodylab-549b2.firebaseapp.com",
+  projectId:         "bodylab-549b2",
+  storageBucket:     "bodylab-549b2.firebasestorage.app",
   messagingSenderId: "766736811462",
-  appId: "1:766736811462:web:42a6cb1fc42967f457dec7"
+  appId:             "1:766736811462:web:42a6cb1fc42967f457dec7"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 </script>
 
 <style>
