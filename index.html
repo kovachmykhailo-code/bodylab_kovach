@@ -472,12 +472,84 @@ canvas{display:block;}
   :root { --sidebar-w: 0px; }
   .sidebar { display: none; }
   .main { margin-left: 0; padding-bottom: 72px; }
-  .topbar { padding: 0 20px; }
-  .mobile-nav { display: flex; }
+  .topbar {
+    padding: 0 20px;
+    padding-top: env(safe-area-inset-top, 0px);
+    height: calc(62px + env(safe-area-inset-top, 0px));
+  }
+  .profile-chip { display: none; }
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--sidebar-bg);
+    z-index: 200;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-nav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: transparent; border: none; cursor: pointer; color: #666;
+    padding: 4px 10px; border-radius: 10px; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent; min-width: 52px; min-height: 44px;
+  }
+  .mobile-nav-btn.active { color: var(--accent); }
+  .mobile-nav-label { font-size: 10px; font-weight: 600; font-family: 'Geist', sans-serif; }
   .toast { bottom: calc(72px + env(safe-area-inset-bottom, 10px)); }
-  .asset-row { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+  /* iPad portrait: stack grids to 1-col */
+  .asset-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sec-row { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  #page-dashboard > div:last-child { grid-template-columns: 1fr !important; }
   .content { padding: 18px 20px; }
+
+  /* Deadline row */
+  .deadline-row { flex-direction: row; padding: 18px 22px; }
+  .dl-progress-wrap { width: 140px; }
+
+  /* Modals as bottom sheet */
+  .modal { width: 100%; max-width: 700px; max-height: 90dvh; border-radius: var(--radius) var(--radius) 0 0; }
+  .modal-overlay { align-items: flex-end; }
+  .modal-row { grid-template-columns: 1fr 1fr; }
+
+  /* Inputs: prevent zoom */
+  input, textarea, select { font-size: 16px !important; }
+  .pills { flex-wrap: wrap; }
+  .promo-card { display: none; }
 }
+
+/* iPad landscape specifically: allow 2-col sections */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .asset-row { grid-template-columns: repeat(4, 1fr); }
+  .sec-row { grid-template-columns: 1fr 320px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  #page-dashboard > div:last-child { grid-template-columns: 1fr 280px !important; }
+  .deadline-row { flex-direction: row; }
+  .promo-card { display: flex; }
+}
+
+/* ── MEASUREMENTS CHART STYLES ── */
+.meas-chart-tabs {
+  display: flex; gap: 6px; margin-bottom: 14px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; flex-wrap: nowrap;
+}
+.meas-chart-tabs::-webkit-scrollbar { display: none; }
+.meas-chart-tab {
+  padding: 5px 14px; border-radius: 50px; border: 1.5px solid var(--border);
+  background: transparent; font-size: 12px; font-weight: 600; color: var(--text2);
+  cursor: pointer; font-family: 'Geist', sans-serif; transition: all 0.15s; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.meas-chart-tab:hover { border-color: var(--accent); color: var(--accent); }
+.meas-chart-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+.meas-chart-wrap { position: relative; height: 200px; margin-top: 8px; }
+
 
 /* Desktop: hide mobile nav */
 @media (min-width: 1025px) {
@@ -693,6 +765,12 @@ canvas{display:block;}
           <div class="sec-title" style="margin-bottom:14px">Поточні показники</div>
           <div id="measCurrentGrid"><div class="empty"><div class="empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="empty-text">Немає замірів</div></div></div>
         </div>
+      </div>
+      <!-- MEASUREMENTS CHART -->
+      <div class="card card-pad" id="measChartCard" style="display:none;margin-bottom:18px">
+        <div class="sec-head"><span class="sec-title">Динаміка замірів</span></div>
+        <div class="meas-chart-tabs" id="measChartTabs"></div>
+        <div class="meas-chart-wrap"><canvas id="measChart"></canvas></div>
       </div>
       <div class="card card-pad"><div class="sec-head"><span class="sec-title">Історія замірів</span></div><div id="measHistory"></div></div>
     </div>
@@ -1150,13 +1228,67 @@ window.saveMeasurement=async()=>{
   setSyncStatus('');showToast('Замір збережено');
 };
 function renderMeasurements(){
-  const sorted=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const sorted=[...userMeasurements].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const sortedDesc=[...sorted].reverse();
   const parts=[{k:'neck',l:'Шия'},{k:'chest',l:'Груди'},{k:'waist',l:'Талія'},{k:'hips',l:'Стегна'},{k:'bicep',l:'Біцепс'},{k:'thigh',l:'Стегно'},{k:'fat',l:'% жиру'}];
   const cg=document.getElementById('measCurrentGrid');const mh=document.getElementById('measHistory');
-  if(!sorted.length){cg.innerHTML='<div class="empty" style="padding:20px"><div class="empty-text">Немає замірів</div></div>';mh.innerHTML='';return;}
-  const latest=sorted[0],prev=sorted[1];
+  if(!sortedDesc.length){cg.innerHTML='<div class="empty" style="padding:20px"><div class="empty-text">Немає замірів</div></div>';mh.innerHTML='';document.getElementById('measChartCard').style.display='none';return;}
+  const latest=sortedDesc[0],prev=sortedDesc[1];
   cg.innerHTML=`<div class="meas-grid">${parts.filter(p=>latest[p.k]).map(p=>{const val=latest[p.k],pv=prev&&prev[p.k];const delta=pv?(val-pv).toFixed(1):null;const good=['waist','fat','hips'].includes(p.k)?delta<0:delta>0;return`<div class="meas-card"><div class="meas-part">${p.l}</div><div class="meas-val">${val}<span class="meas-unit">${p.k==='fat'?'%':' см'}</span></div>${delta?`<div class="meas-delta ${good?'d-pos':delta==0?'d-neu':'d-neg'}">${delta>0?'+':''}${delta}</div>`:''}</div>`;}).join('')}</div>`;
-  mh.innerHTML=sorted.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-light)"><div style="font-size:11px;color:var(--text3);min-width:90px;font-weight:600;font-family:'Geist Mono',monospace">${m.date}</div><div style="display:flex;flex-wrap:wrap;gap:5px;flex:1">${parts.filter(p=>m[p.k]).map(p=>`<span class="badge badge-gray">${p.l}: ${m[p.k]}</span>`).join('')}</div><button class="del-btn" onclick="delMeas('${m.id}')">×</button></div>`).join('');
+  mh.innerHTML=sortedDesc.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-light)"><div style="font-size:11px;color:var(--text3);min-width:90px;font-weight:600;font-family:'Geist Mono',monospace">${m.date}</div><div style="display:flex;flex-wrap:wrap;gap:5px;flex:1">${parts.filter(p=>m[p.k]).map(p=>`<span class="badge badge-gray">${p.l}: ${m[p.k]}</span>`).join('')}</div><button class="del-btn" onclick="delMeas('${m.id}')">×</button></div>`).join('');
+
+  // Chart
+  const availParts=parts.filter(p=>sorted.some(m=>m[p.k]));
+  if(sorted.length>=2&&availParts.length){
+    document.getElementById('measChartCard').style.display='block';
+    const tabsEl=document.getElementById('measChartTabs');
+    if(!window._measChartTab||!availParts.find(p=>p.k===window._measChartTab))window._measChartTab=availParts[0].k;
+    tabsEl.innerHTML=availParts.map(p=>`<button class="meas-chart-tab${p.k===window._measChartTab?' active':''}" onclick="switchMeasChart('${p.k}')">${p.l}</button>`).join('');
+    drawMeasChart(sorted,availParts);
+  } else {
+    document.getElementById('measChartCard').style.display='none';
+  }
+}
+
+window.switchMeasChart=(key)=>{
+  window._measChartTab=key;
+  document.querySelectorAll('.meas-chart-tab').forEach(t=>t.classList.toggle('active',t.textContent===document.querySelector(`.meas-chart-tab[onclick*="${key}"]`)?.textContent));
+  document.querySelectorAll('.meas-chart-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.meas-chart-tab[onclick*="'${key}'"]`)?.classList.add('active');
+  const sorted=[...userMeasurements].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const parts=[{k:'neck',l:'Шия'},{k:'chest',l:'Груди'},{k:'waist',l:'Талія'},{k:'hips',l:'Стегна'},{k:'bicep',l:'Біцепс'},{k:'thigh',l:'Стегно'},{k:'fat',l:'% жиру'}];
+  const availParts=parts.filter(p=>sorted.some(m=>m[p.k]));
+  drawMeasChart(sorted,availParts);
+};
+
+let _measChartInstance=null;
+function drawMeasChart(sorted,availParts){
+  const key=window._measChartTab||availParts[0].k;
+  const part=availParts.find(p=>p.k===key)||availParts[0];
+  const pts=sorted.filter(m=>m[key]!=null);
+  if(!pts.length)return;
+  const labels=pts.map(m=>m.date.slice(5));
+  const vals=pts.map(m=>m[key]);
+  const isGoodDown=['waist','fat','hips'].includes(key);
+  const first=vals[0],last=vals[vals.length-1];
+  const improving=isGoodDown?(last<first):(last>first);
+  const lineColor=improving?'#22c55e':'#f97316';
+  const fillColor=improving?'rgba(34,197,94,0.08)':'rgba(249,115,22,0.08)';
+  const canvas=document.getElementById('measChart');
+  if(_measChartInstance){_measChartInstance.destroy();_measChartInstance=null;}
+  const unit=key==='fat'?'%':' см';
+  _measChartInstance=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets:[{data:vals,borderColor:lineColor,backgroundColor:fillColor,borderWidth:2.5,pointRadius:5,pointBackgroundColor:lineColor,pointBorderColor:'white',pointBorderWidth:2,fill:true,tension:0.35}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}${unit}`},backgroundColor:'#111',titleColor:'#fff',bodyColor:'#ccc',padding:10,cornerRadius:8}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'Geist Mono',size:10},color:'#9ca3af'}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Geist Mono',size:10},color:'#9ca3af',callback:v=>`${v}${unit}`},border:{display:false}}
+      }
+    }
+  });
 }
 window.delMeas=async id=>{setSyncStatus('...');await deleteDoc(doc(db,'users',currentUser.uid,'measurements',id));setSyncStatus('');};
 
