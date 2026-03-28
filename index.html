@@ -6,6 +6,31 @@
 <title>Body Lab</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@200;300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
+<!-- ═══════════════════════════════════════════════════════════════
+     КРОК 1: Замінити значення нижче на свої з Firebase Console
+     Інструкція в README.md
+═══════════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, deleteDoc, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── Init ──
+// СЮДИ ВСТАВЛЯЄМО ТВОЇ ДАНІ
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyARlwgKAkj9bSsEHq_7oLrtmt1lESBg3H0",
+  authDomain:        "bodylab-549b2.firebaseapp.com",
+  projectId:         "bodylab-549b2",
+  storageBucket:     "bodylab-549b2.firebasestorage.app",
+  messagingSenderId: "766736811462",
+  appId:             "1:766736811462:web:42a6cb1fc42967f457dec7"
+};
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+</script>
+
 <style>
 :root {
   --bg:#f0f2f5; --white:#fff; --sidebar-bg:#111;
@@ -536,22 +561,13 @@ canvas{display:block;}
 
 <div class="toast" id="toast"></div>
 
-<!-- ══════════ ЄДИНИЙ FIREBASE СКРИПТ ══════════ -->
+<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, deleteDoc, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// ── Firebase Config ──
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyARlwgKAkj9bSsEHq_7oLrtmt1lESBg3H0",
-  authDomain:        "bodylab-549b2.firebaseapp.com",
-  projectId:         "bodylab-549b2",
-  storageBucket:     "bodylab-549b2.firebasestorage.app",
-  messagingSenderId: "766736811462",
-  appId:             "1:766736811462:web:42a6cb1fc42967f457dec7"
-};
-
+// ── Init ──
 const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
@@ -582,27 +598,32 @@ function uCol(path) { return collection(db, 'users', currentUser.uid, path); }
 
 async function loadUserData() {
   setSyncStatus('Завантаження...');
+  // profile
   const pSnap = await getDoc(uRef('profile/data'));
   userProfile = pSnap.exists() ? pSnap.data() : { startDate:'2025-02-01', deadline:'2026-05-16', goal:"м'язова щільність, прес, плечі", equip:'гантелі 13 кг, упори, петлі' };
 
+  // weights — realtime
   const wUnsub = onSnapshot(query(uCol('weights'), orderBy('date')), snap => {
     userWeights = snap.docs.map(d => ({id:d.id, ...d.data()}));
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
     if (document.getElementById('page-weight').classList.contains('active')) { renderWeightTable(); drawChart('weightChart2', userWeights, true); }
   });
 
+  // measurements — realtime
   const mUnsub = onSnapshot(query(uCol('measurements'), orderBy('date')), snap => {
     userMeasurements = snap.docs.map(d => ({id:d.id, ...d.data()}));
     if (document.getElementById('page-measurements').classList.contains('active')) renderMeasurements();
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
   });
 
+  // logs — realtime
   const lUnsub = onSnapshot(query(uCol('workoutLogs'), orderBy('date')), snap => {
     userLogs = snap.docs.map(d => ({id:d.id, ...d.data()}));
     if (document.getElementById('page-history').classList.contains('active')) renderHistory();
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
   });
 
+  // workoutState
   const wsSnap = await getDoc(uRef('workoutState/data'));
   workoutState = wsSnap.exists() ? wsSnap.data() : {};
 
@@ -644,6 +665,7 @@ window.submitAuth = async () => {
     } else {
       const name = document.getElementById('authName').value.trim();
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      // save initial profile
       await setDoc(doc(db,'users',cred.user.uid,'profile','data'), {
         name, email, startDate:'2025-02-01', deadline:'2026-05-16',
         goal:"м'язова щільність, прес, плечі", equip:'гантелі 13 кг, упори, петлі',
@@ -728,6 +750,7 @@ window.toggleApiVis = () => {
 window.confirmReset = async () => {
   if (!confirm('Видалити всі дані тренувань, ваги та замірів?')) return;
   setSyncStatus('Видалення...');
+  // delete all subcollection docs
   for (const col of ['weights','measurements','workoutLogs']) {
     const snap = await getDocs(uCol(col));
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
