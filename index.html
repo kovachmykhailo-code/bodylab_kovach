@@ -1252,7 +1252,6 @@ function renderMeasurements(){
 
 window.switchMeasChart=(key)=>{
   window._measChartTab=key;
-  document.querySelectorAll('.meas-chart-tab').forEach(t=>t.classList.toggle('active',t.textContent===document.querySelector(`.meas-chart-tab[onclick*="${key}"]`)?.textContent));
   document.querySelectorAll('.meas-chart-tab').forEach(t=>t.classList.remove('active'));
   document.querySelector(`.meas-chart-tab[onclick*="'${key}'"]`)?.classList.add('active');
   const sorted=[...userMeasurements].sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -1264,31 +1263,61 @@ window.switchMeasChart=(key)=>{
 let _measChartInstance=null;
 function drawMeasChart(sorted,availParts){
   const key=window._measChartTab||availParts[0].k;
-  const part=availParts.find(p=>p.k===key)||availParts[0];
   const pts=sorted.filter(m=>m[key]!=null);
-  if(!pts.length)return;
-  const labels=pts.map(m=>m.date.slice(5));
-  const vals=pts.map(m=>m[key]);
+  const canvas=document.getElementById('measChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const wrap=canvas.parentElement;
+  const W=wrap.clientWidth||300,H=200;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  if(pts.length<2){
+    ctx.fillStyle='#9ca3af';ctx.font='12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Додай мінімум 2 записи',W/2,H/2);return;
+  }
   const isGoodDown=['waist','fat','hips'].includes(key);
-  const first=vals[0],last=vals[vals.length-1];
+  const first=pts[0][key],last=pts[pts.length-1][key];
   const improving=isGoodDown?(last<first):(last>first);
   const lineColor=improving?'#22c55e':'#f97316';
-  const fillColor=improving?'rgba(34,197,94,0.08)':'rgba(249,115,22,0.08)';
-  const canvas=document.getElementById('measChart');
-  if(_measChartInstance){_measChartInstance.destroy();_measChartInstance=null;}
+  const gradTop=improving?'rgba(34,197,94,0.12)':'rgba(249,115,22,0.12)';
   const unit=key==='fat'?'%':' см';
-  _measChartInstance=new Chart(canvas,{
-    type:'line',
-    data:{labels,datasets:[{data:vals,borderColor:lineColor,backgroundColor:fillColor,borderWidth:2.5,pointRadius:5,pointBackgroundColor:lineColor,pointBorderColor:'white',pointBorderWidth:2,fill:true,tension:0.35}]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}${unit}`},backgroundColor:'#111',titleColor:'#fff',bodyColor:'#ccc',padding:10,cornerRadius:8}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'Geist Mono',size:10},color:'#9ca3af'}},
-        y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Geist Mono',size:10},color:'#9ca3af',callback:v=>`${v}${unit}`},border:{display:false}}
-      }
-    }
+  const vals=pts.map(m=>m[key]);
+  const mn=Math.min(...vals)-Math.max(0.5,(Math.max(...vals)-Math.min(...vals))*0.1);
+  const mx=Math.max(...vals)+Math.max(0.5,(Math.max(...vals)-Math.min(...vals))*0.1);
+  const pad={t:12,r:12,b:28,l:46};
+  const xS=i=>pad.l+(i/(pts.length-1))*(W-pad.l-pad.r);
+  const yS=v=>pad.t+(1-(v-mn)/(mx-mn))*(H-pad.t-pad.b);
+  // grid
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(i/4)*(H-pad.t-pad.b);
+    ctx.strokeStyle='#f0f2f5';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const val=(mx-(i/4)*(mx-mn)).toFixed(1);
+    ctx.fillStyle='#9ca3af';ctx.font='9px monospace';ctx.textAlign='right';
+    ctx.fillText(val+unit,pad.l-4,y+3);
+  }
+  // fill
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,gradTop);grad.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.beginPath();ctx.moveTo(xS(0),H-pad.b);
+  pts.forEach((m,i)=>ctx.lineTo(xS(i),yS(m[key])));
+  ctx.lineTo(xS(pts.length-1),H-pad.b);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  // line
+  ctx.beginPath();ctx.strokeStyle=lineColor;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  pts.forEach((m,i)=>i===0?ctx.moveTo(xS(i),yS(m[key])):ctx.lineTo(xS(i),yS(m[key])));
+  ctx.stroke();
+  // dots
+  pts.forEach((m,i)=>{
+    ctx.beginPath();ctx.arc(xS(i),yS(m[key]),4,0,Math.PI*2);
+    ctx.fillStyle='white';ctx.fill();
+    ctx.strokeStyle=lineColor;ctx.lineWidth=2;ctx.stroke();
   });
+  // x labels
+  ctx.fillStyle='#9ca3af';ctx.font='9px monospace';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(pts.length/5));
+  pts.forEach((m,i)=>{if(i%step===0||i===pts.length-1)ctx.fillText(m.date.slice(5),xS(i),H-pad.b+14);});
 }
 window.delMeas=async id=>{setSyncStatus('...');await deleteDoc(doc(db,'users',currentUser.uid,'measurements',id));setSyncStatus('');};
 
