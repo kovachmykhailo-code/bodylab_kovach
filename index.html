@@ -871,6 +871,34 @@ canvas{display:block;}
   </div>
 </div>
 
+<!-- WORKOUT COMPLETE OVERLAY -->
+<div id="workoutCompleteOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);z-index:600;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:32px 28px;width:360px;max-width:92vw;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.2)">
+    <div style="width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px">🎉</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">Тренування завершено!</div>
+    <div id="workoutCompleteName" style="font-size:13px;color:var(--text2);margin-bottom:24px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-accent" style="flex:1" onclick="saveWorkoutLog()">Зберегти в журнал</button>
+      <button class="btn btn-ghost" onclick="closeWorkoutCompleteDialog()">Продовжити</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT LOG OVERLAY -->
+<div id="editLogOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:white;border-radius:20px;width:560px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0">
+      <div id="editLogTitle" style="font-size:16px;font-weight:600"></div>
+      <button class="modal-close" onclick="closeEditLog()">✕</button>
+    </div>
+    <div id="editLogBody" style="padding:16px 24px;overflow-y:auto;flex:1"></div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border-light);display:flex;gap:10px">
+      <button class="btn btn-accent" onclick="saveEditLog()">Зберегти зміни</button>
+      <button class="btn btn-ghost" onclick="closeEditLog()">Скасувати</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ══════════ ЄДИНИЙ FIREBASE СКРИПТ ══════════ -->
@@ -1222,12 +1250,39 @@ function renderWorkout(){
   document.getElementById('workoutContent').innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><div style="font-size:16px;font-weight:600">${day.name}</div><span class="badge badge-gray" style="margin-top:5px;display:inline-flex">${day.tag}</span></div><div style="font-size:12px;color:var(--text3);font-family:'Geist Mono',monospace">${doneCount}/${day.exercises.length}</div></div>${day.exercises.map((ex,i)=>{const s=st[i]||{};return`<div class="ex-row ${s.done?'done':''}" id="exrow${i}"><div><div class="ex-name">${ex.name}</div><div class="ex-target">${ex.target} · ${ex.tempo}</div></div><input class="ex-inp" type="text" placeholder="${ex.target}" value="${s.sets||''}" oninput="updEx(${i},'sets',this.value)" title="Підходи"><input class="ex-inp" type="text" placeholder="повт" value="${s.reps||''}" oninput="updEx(${i},'reps',this.value)"><input class="ex-inp" type="text" placeholder="нотатка" value="${s.note||''}" oninput="updEx(${i},'note',this.value)"><button class="check-btn ${s.done?'done-btn':''}" onclick="toggleEx(${i})">✓</button></div>`;}).join('')}`;
 }
 window.updEx=async(i,field,val)=>{if(!workoutState[currentDay])workoutState[currentDay]={};if(!workoutState[currentDay][i])workoutState[currentDay][i]={};workoutState[currentDay][i][field]=val;await saveWorkoutStateFB();};
-window.toggleEx=async i=>{if(!workoutState[currentDay])workoutState[currentDay]={};if(!workoutState[currentDay][i])workoutState[currentDay][i]={};workoutState[currentDay][i].done=!workoutState[currentDay][i].done;await saveWorkoutStateFB();renderWorkout();};
+window.toggleEx=async i=>{
+  if(!workoutState[currentDay])workoutState[currentDay]={};
+  if(!workoutState[currentDay][i])workoutState[currentDay][i]={};
+  workoutState[currentDay][i].done=!workoutState[currentDay][i].done;
+  await saveWorkoutStateFB();
+  renderWorkout();
+  // Перевіряємо чи всі вправи виконані
+  const plan=getPlan();const day=plan[currentDay]||plan[0];
+  if(!day)return;
+  const st=workoutState[currentDay]||{};
+  const doneCount=day.exercises.filter((_,idx)=>st[idx]&&st[idx].done).length;
+  if(doneCount===day.exercises.length&&day.exercises.length>0){
+    // Затримка щоб renderWorkout встиг оновити UI
+    setTimeout(()=>showWorkoutCompleteDialog(),200);
+  }
+};
+function showWorkoutCompleteDialog(){
+  const plan=getPlan();const day=plan[currentDay]||plan[0];
+  const overlay=document.getElementById('workoutCompleteOverlay');
+  document.getElementById('workoutCompleteName').textContent=day.name;
+  overlay.style.display='flex';
+}
+window.closeWorkoutCompleteDialog=()=>{
+  document.getElementById('workoutCompleteOverlay').style.display='none';
+};
 window.saveWorkoutLog=async()=>{
   setSyncStatus('Збереження...');
   const st=workoutState[currentDay]||{};const plan=getPlan();const day=plan[currentDay]||plan[0];
-  await addDoc(uCol('workoutLogs'),{date:new Date().toISOString().slice(0,10),dayIdx:currentDay,dayName:day.name,exercises:day.exercises.map((ex,i)=>({name:ex.name,target:ex.target,done:!!(st[i]&&st[i].done),sets:(st[i]&&st[i].sets)||'',reps:(st[i]&&st[i].reps)||'',note:(st[i]&&st[i].note)||''}))});
-  delete workoutState[currentDay];await saveWorkoutStateFB();setSyncStatus('');showToast('Тренування збережено');renderWorkout();
+  const logData={date:new Date().toISOString().slice(0,10),dayIdx:currentDay,dayName:day.name,exercises:day.exercises.map((ex,i)=>({name:ex.name,target:ex.target,done:!!(st[i]&&st[i].done),sets:(st[i]&&st[i].sets)||'',reps:(st[i]&&st[i].reps)||'',note:(st[i]&&st[i].note)||''}))};
+  await addDoc(uCol('workoutLogs'),logData);
+  delete workoutState[currentDay];await saveWorkoutStateFB();setSyncStatus('');
+  document.getElementById('workoutCompleteOverlay').style.display='none';
+  showToast('✓ Тренування збережено в журнал');renderWorkout();
 };
 window.resetWorkoutDay=async()=>{delete workoutState[currentDay];await saveWorkoutStateFB();renderWorkout();};
 
@@ -1355,9 +1410,45 @@ function renderHistory(){
   const el=document.getElementById('historyContent');
   if(!userLogs.length){el.innerHTML='<div class="empty"><div class="empty-text">Журнал порожній</div></div>';return;}
   const sorted=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  el.innerHTML=sorted.map(log=>{const done=log.exercises.filter(e=>e.done).length;return`<div class="card card-pad" style="margin-bottom:12px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-size:15px;font-weight:600">${log.dayName}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'Geist Mono',monospace">${log.date}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${done===log.exercises.length?'badge-green':done>0?'badge-accent':'badge-gray'}">${done}/${log.exercises.length}</span><button class="del-btn" onclick="delLog('${log.id}')">×</button></div></div><table class="data-table"><thead><tr><th>Вправа</th><th>Ціль</th><th>Стан</th><th>Підходи</th><th>Нотатка</th></tr></thead><tbody>${log.exercises.map(ex=>`<tr><td style="font-weight:500">${ex.name}</td><td style="color:var(--text3);font-size:11px">${ex.target}</td><td>${ex.done?'<span class="badge badge-green">✓</span>':'<span class="badge badge-gray">—</span>'}</td><td style="font-size:12px;font-family:'Geist Mono',monospace">${ex.sets||'—'}</td><td style="font-size:12px;color:var(--text2)">${ex.note||'—'}</td></tr>`).join('')}</tbody></table></div>`;}).join('');
+  el.innerHTML=sorted.map(log=>{const done=log.exercises.filter(e=>e.done).length;return`<div class="card card-pad" style="margin-bottom:12px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-size:15px;font-weight:600">${log.dayName}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'Geist Mono',monospace">${log.date}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${done===log.exercises.length?'badge-green':done>0?'badge-accent':'badge-gray'}">${done}/${log.exercises.length}</span><button class="del-btn" onclick="openEditLog('${log.id}')" title="Редагувати" style="color:var(--accent)">✎</button><button class="del-btn" onclick="delLog('${log.id}')">×</button></div></div><table class="data-table"><thead><tr><th>Вправа</th><th>Ціль</th><th>Стан</th><th>Підходи</th><th>Нотатка</th></tr></thead><tbody>${log.exercises.map(ex=>`<tr><td style="font-weight:500">${ex.name}</td><td style="color:var(--text3);font-size:11px">${ex.target}</td><td>${ex.done?'<span class="badge badge-green">✓</span>':'<span class="badge badge-gray">—</span>'}</td><td style="font-size:12px;font-family:'Geist Mono',monospace">${ex.sets||'—'}</td><td style="font-size:12px;color:var(--text2)">${ex.note||'—'}</td></tr>`).join('')}</tbody></table></div>`;}).join('');
 }
 window.delLog=async id=>{setSyncStatus('...');await deleteDoc(doc(db,'users',currentUser.uid,'workoutLogs',id));setSyncStatus('');};
+
+// ── EDIT LOG ──
+let editingLogId=null;
+window.openEditLog=(id)=>{
+  const log=userLogs.find(l=>l.id===id);if(!log)return;
+  editingLogId=id;
+  document.getElementById('editLogTitle').textContent=log.dayName+' — '+log.date;
+  const body=document.getElementById('editLogBody');
+  body.innerHTML=log.exercises.map((ex,i)=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border-light)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500">${ex.name}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--text3)">${ex.target}</span>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="editDone${i}" ${ex.done?'checked':''} style="accent-color:var(--green);width:16px;height:16px">
+            виконано
+          </label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field"><label>Підходи</label><input class="plan-inp" id="editSets${i}" value="${ex.sets||''}" placeholder="3×10"></div>
+        <div class="field"><label>Нотатка</label><input class="plan-inp" id="editNote${i}" value="${ex.note||''}" placeholder="—"></div>
+      </div>
+    </div>`).join('');
+  document.getElementById('editLogOverlay').style.display='flex';
+};
+window.closeEditLog=()=>{document.getElementById('editLogOverlay').style.display='none';editingLogId=null;};
+window.saveEditLog=async()=>{
+  const log=userLogs.find(l=>l.id===editingLogId);if(!log)return;
+  setSyncStatus('Збереження...');
+  const updExercises=log.exercises.map((ex,i)=>({...ex,done:document.getElementById('editDone'+i)?.checked||false,sets:document.getElementById('editSets'+i)?.value||'',note:document.getElementById('editNote'+i)?.value||''}));
+  await setDoc(doc(db,'users',currentUser.uid,'workoutLogs',editingLogId),{...log,exercises:updExercises},{merge:true});
+  setSyncStatus('');showToast('✓ Тренування оновлено');
+  window.closeEditLog();
+};
 
 // ── AI ──
 function buildCtx(){
