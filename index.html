@@ -1503,7 +1503,9 @@ function buildCtx(){
     '\n\nВАГА (останні записи):\n'+weightStr+
     '\n\nЗАМІРИ ТІЛА (см, останні записи):\n'+measStr+
     '\n\nЖУРНАЛ ТРЕНУВАНЬ (останні 10, ✓=виконано ✗=пропущено):\n'+logStr+
-    '\n\nЯКЩО пропонуєш змінити план — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.';
+    '\n\nЯКЩО пропонуєш змінити план — додай в кінці ТОЧНО такий JSON у тегах <plan>...</plan> (БЕЗ markdown, БЕЗ коментарів):\n'+
+    '<plan>[{"name":"День 1 — Назва","tag":"ТЕГ","exercises":[{"name":"Назва вправи","target":"4×8","tempo":"3 сек вниз"}]}]</plan>\n'+
+    'Якщо план не змінюється — НЕ додавай тег <plan>.';
 }
 
 window.sendMessage=async()=>{
@@ -1520,7 +1522,31 @@ window.sendMessage=async()=>{
     if(reply){
       chatHistory.push({role:'assistant',content:reply});
       const planMatch=reply.match(/<plan>([\s\S]*?)<\/plan>/);
-      if(planMatch){try{pendingPlan=JSON.parse(planMatch[1].trim());addMsg(reply.replace(/<plan>[\s\S]*?<\/plan>/,'').trim(),'ai');addPlanProposal();}catch{addMsg(reply,'ai');}}
+      if(planMatch){
+        try{
+          let rawPlan=planMatch[1].trim();
+          // Прибираємо можливі markdown-обгортки ```json ... ```
+          rawPlan=rawPlan.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'').trim();
+          pendingPlan=JSON.parse(rawPlan);
+          if(!Array.isArray(pendingPlan)||!pendingPlan.length)throw new Error('Не масив');
+          // Нормалізуємо структуру — кожен день має мати name і exercises
+          pendingPlan=pendingPlan.map(day=>({
+            name: day.name||day.day||'День',
+            tag: day.tag||'',
+            exercises: (day.exercises||[]).map(ex=>({
+              name: ex.name||'',
+              target: ex.target||ex.sets||'',
+              tempo: ex.tempo||ex.rest||''
+            }))
+          }));
+          addMsg(reply.replace(/<plan>[\s\S]*?<\/plan>/,'').trim(),'ai');
+          addPlanProposal();
+        }catch(e){
+          console.error('Plan parse error:',e,'Raw:',planMatch[1]);
+          addMsg(reply.replace(/<plan>[\s\S]*?<\/plan>/,'').trim(),'ai');
+          addMsg('⚠️ Не вдалося розпізнати структуру нового плану. Спробуй попросити AI ще раз.','system');
+        }
+      }
       else addMsg(reply,'ai');
     }else addMsg('Помилка відповіді.','ai');
   }catch(e){removeLoading(lid);addMsg('Помилка з\'єднання.','system');}
