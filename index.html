@@ -1452,12 +1452,58 @@ window.saveEditLog=async()=>{
 
 // ── AI ──
 function buildCtx(){
-  const p=userProfile;const daysLeft=Math.ceil((new Date(p.deadline||'2026-05-16')-new Date())/(1000*60*60*24));
-  const wL=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  const mL=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
-  const lL=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,7);
-  const plan=getPlan();const planSummary=plan.map((day,i)=>`День ${i+1} (${day.name}): ${day.exercises.map(e=>e.name).join(', ')}`).join('\n');
-  return`Ти персональний тренер. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'—'}, Вік: ${p.age||36}\n- Ціль: ${p.goal||'трансформація'} — залишилось ${daysLeft} днів\n- Інвентар: ${p.equip||'гантелі, упори'}\n\nПЛАН:\n${planSummary}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.`;
+  const p=userProfile;
+  const daysLeft=Math.ceil((new Date(p.deadline||'2026-05-16')-new Date())/(1000*60*60*24));
+  const wL=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  const mL=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,4);
+  const lL=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  const plan=getPlan();
+
+  const planSummary=plan.map((day,i)=>
+    `День ${i+1} (${day.name}): ${day.exercises.map(e=>e.name+' '+e.target).join(', ')}`
+  ).join('\n');
+
+  const weightStr=wL.length
+    ? wL.map(w=>`${w.date}: ${w.value}кг${w.note?' ('+w.note+')':''}`).join('\n')
+    : 'немає даних';
+
+  const measStr=mL.length
+    ? mL.map(m=>{
+        const parts=[];
+        if(m.neck!=null)parts.push('шия '+m.neck);
+        if(m.chest!=null)parts.push('груди '+m.chest);
+        if(m.waist!=null)parts.push('талія '+m.waist);
+        if(m.hips!=null)parts.push('стегна '+m.hips);
+        if(m.bicep!=null)parts.push('біцепс '+m.bicep);
+        if(m.thigh!=null)parts.push('стегно '+m.thigh);
+        if(m.fat!=null)parts.push('жир '+m.fat+'%');
+        return m.date+': '+parts.join(', ');
+      }).join('\n')
+    : 'немає даних';
+
+  const logStr=lL.length
+    ? lL.map(l=>{
+        const done=l.exercises.filter(e=>e.done).length;
+        const exLines=l.exercises.map(ex=>{
+          const s=ex.done?'✓':'✗';
+          const sets=ex.sets?' ['+ex.sets+']':'';
+          const note=ex.note?' ('+ex.note+')':'';
+          return '  '+s+' '+ex.name+' '+ex.target+sets+note;
+        }).join('\n');
+        return l.date+' '+l.dayName+' ('+done+'/'+l.exercises.length+'):\n'+exLines;
+      }).join('\n\n')
+    : 'немає записів';
+
+  return 'Ти персональний тренер. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.'+
+    '\n\nПРОФІЛЬ:'+
+    '\n- Ім\'я: '+(p.name||'—')+', Вік: '+(p.age||36)+
+    '\n- Ціль: '+(p.goal||'трансформація')+' — залишилось '+daysLeft+' днів'+
+    '\n- Інвентар: '+(p.equip||'гантелі, упори')+
+    '\n\nПЛАН ТРЕНУВАНЬ:\n'+planSummary+
+    '\n\nВАГА (останні записи):\n'+weightStr+
+    '\n\nЗАМІРИ ТІЛА (см, останні записи):\n'+measStr+
+    '\n\nЖУРНАЛ ТРЕНУВАНЬ (останні 10, ✓=виконано ✗=пропущено):\n'+logStr+
+    '\n\nЯКЩО пропонуєш змінити план — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.';
 }
 
 window.sendMessage=async()=>{
