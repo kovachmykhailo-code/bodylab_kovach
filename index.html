@@ -1994,7 +1994,12 @@ function buildCtx(){
   const mL=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
   const lL=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,7);
   const plan=getPlan();const planSummary=plan.map((day,i)=>`День ${i+1} (${day.name}): ${day.exercises.map(e=>e.name).join(', ')}`).join('\n');
-  return`Ти персональний тренер. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'—'}, Вік: ${p.age||36}\n- Ціль: ${p.goal||'трансформація'} — залишилось ${daysLeft} днів\n- Інвентар: ${p.equip||'гантелі, упори'}\n\nПЛАН:\n${planSummary}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.`;
+  // Build current schedule context (next 14 days)
+  const todayStr=new Date().toISOString().slice(0,10);
+  const scheduleLines=[];
+  for(let i=0;i<14;i++){const d=new Date(todayStr+'T12:00:00');d.setDate(d.getDate()+i);const ds=d.toISOString().slice(0,10);const st=wcGetDayStatus(ds);const planDay=plan[st.planDayIdx];scheduleLines.push(`${ds}: ${st.type}${planDay?' ('+planDay.name+', індекс '+st.planDayIdx+')':''}`);}
+  const scheduleCtx=scheduleLines.join('\n');
+  return`Ти персональний тренер. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'—'}, Вік: ${p.age||36}\n- Ціль: ${p.goal||'трансформація'} — залишилось ${daysLeft} днів\n- Інвентар: ${p.equip||'гантелі, упори'}\n\nПЛАН:\n${planSummary}\n\nРОЗКЛАД (наступні 14 днів):\n${scheduleCtx}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план тренувань — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.\n\nЯКЩО пропонуєш змінити розклад у календарі (перенести, скасувати, поставити вихідний) — додай JSON у тегах <schedule>[...]</schedule>. Кожен елемент масиву: {"date":"YYYY-MM-DD","type":"planned"|"rest"|"missed"|"done-quick","planDayIdx":N_або_null}. Якщо розклад не змінюється — НЕ додавай <schedule>.`;
 }
 
 window.sendMessage=async()=>{
@@ -2011,10 +2016,43 @@ window.sendMessage=async()=>{
     if(reply){
       chatHistory.push({role:'assistant',content:reply});
       const planMatch=reply.match(/<plan>([\s\S]*?)<\/plan>/);
-      if(planMatch){try{pendingPlan=JSON.parse(planMatch[1].trim());addMsg(reply.replace(/<plan>[\s\S]*?<\/plan>/,'').trim(),'ai');addPlanProposal();}catch{addMsg(reply,'ai');}}
-      else addMsg(reply,'ai');
+      const scheduleMatch=reply.match(/<schedule>([\s\S]*?)<\/schedule>/);
+      const cleanReply=reply.replace(/<plan>[\s\S]*?<\/plan>/g,'').replace(/<schedule>[\s\S]*?<\/schedule>/g,'').trim();
+      let rendered=false;
+      if(planMatch){try{pendingPlan=JSON.parse(planMatch[1].trim());addMsg(cleanReply,'ai');addPlanProposal();rendered=true;}catch(e){}}
+      if(scheduleMatch){try{const sc=JSON.parse(scheduleMatch[1].trim());if(!rendered){addMsg(cleanReply,'ai');rendered=true;}addScheduleProposal(sc);}catch(e){}}
+      if(!rendered)addMsg(cleanReply||reply,'ai');
     }else addMsg('Помилка відповіді.','ai');
   }catch(e){removeLoading(lid);addMsg('Помилка з\'єднання.','system');}
+};
+let pendingSchedule=null;
+function addScheduleProposal(changes){
+  pendingSchedule=changes;
+  const el=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='apply-banner';
+  const UA_DAYS=['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const typeLabel={planned:'Тренування',rest:'Вихідний',missed:'Пропущено','done-quick':'Виконано'};
+  const plan=getPlan();
+  const preview=changes.map(c=>{
+    const d=new Date(c.date+'T12:00:00');
+    const dayName=plan[c.planDayIdx]?plan[c.planDayIdx].name:'';
+    return`<div style="font-size:11px;color:#92400e;margin-top:4px"><strong>${UA_DAYS[d.getDay()]} ${c.date}:</strong> ${typeLabel[c.type]||c.type}${dayName?' — '+dayName:''}</div>`;
+  }).join('');
+  div.innerHTML=`<div style="width:100%"><div class="apply-banner-text" style="margin-bottom:6px">📅 AI пропонує зміни у розкладі:</div>${preview}<div style="display:flex;gap:8px;margin-top:10px"><button class="apply-banner-btn" onclick="applyAISchedule()">Застосувати</button><button class="apply-banner-btn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent-mid)" onclick="this.closest('.apply-banner').remove();pendingSchedule=null;">Відхилити</button></div></div>`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+window.applyAISchedule=async()=>{
+  if(!pendingSchedule)return;
+  for(const c of pendingSchedule){
+    if(c.type==='auto'||c.type==='none'){await deleteScheduleDay(c.date);}
+    else{await saveScheduleDay(c.date,{type:c.type,planDayIdx:c.planDayIdx??null});}
+  }
+  pendingSchedule=null;
+  document.querySelectorAll('.apply-banner').forEach(b=>b.remove());
+  addMsg(`Розклад оновлено!`,'system');
+  showToast('Зміни у календарі застосовано');
+  renderWeekCalendar();
 };
 function addPlanProposal(){
   const el=document.getElementById('chatMessages');
