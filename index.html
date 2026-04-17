@@ -173,6 +173,345 @@ body{font-family:'Geist',sans-serif;font-weight:300;background:var(--bg);color:v
 .check-btn:hover{border-color:var(--green);color:var(--green);}
 .check-btn.done-btn{background:var(--green);border-color:var(--green);color:white;}
 
+/* ── WEEKLY WORKOUT CALENDAR ── */
+:root {
+  --wc-strength: #3b82f6;
+  --wc-strength-bg: #eff6ff;
+  --wc-strength-border: #bfdbfe;
+  --wc-cardio: #f97316;
+  --wc-cardio-bg: #fff7ed;
+  --wc-cardio-border: #fed7aa;
+  --wc-stretch: #8b5cf6;
+  --wc-stretch-bg: #f5f3ff;
+  --wc-stretch-border: #ddd6fe;
+  --wc-rest: #6b7280;
+  --wc-rest-bg: #f9fafb;
+  --wc-rest-border: #e5e7eb;
+  --wc-done: #22c55e;
+  --wc-done-bg: #f0fdf4;
+  --wc-done-border: #bbf7d0;
+  --wc-missed: #ef4444;
+  --wc-missed-bg: #fef2f2;
+  --wc-missed-border: #fecaca;
+}
+
+/* Week nav header */
+.wc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 10px;
+}
+.wc-week-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  text-align: center;
+}
+.wc-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
+  font-size: 16px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.wc-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.wc-today-btn {
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: 'Geist', sans-serif;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.wc-today-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Week grid */
+.wc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+@media (max-width: 768px) {
+  .wc-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+}
+
+/* Day column */
+.wc-day {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.wc-day-head {
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 2px solid transparent;
+}
+.wc-day-head.today { border-bottom-color: var(--blue); }
+.wc-dow {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text3);
+}
+.wc-date-num {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text);
+  font-family: 'Geist Mono', monospace;
+  line-height: 1.2;
+}
+.wc-day-head.today .wc-date-num {
+  width: 30px; height: 30px;
+  background: var(--blue);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px auto 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Workout card */
+.wc-card {
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  padding: 8px 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  min-height: 70px;
+  user-select: none;
+}
+.wc-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.wc-card.dragging { opacity: 0.4; transform: scale(0.96); }
+.wc-card.drag-over { border-color: var(--accent); background: var(--accent-light); }
+
+/* Type colors */
+.wc-type-strength { background: var(--wc-strength-bg); border-color: var(--wc-strength-border); }
+.wc-type-cardio { background: var(--wc-cardio-bg); border-color: var(--wc-cardio-border); }
+.wc-type-stretch { background: var(--wc-stretch-bg); border-color: var(--wc-stretch-border); }
+.wc-type-rest { background: var(--wc-rest-bg); border-color: var(--wc-rest-border); cursor: default; }
+.wc-type-rest:hover { transform: none; box-shadow: none; }
+.wc-type-done { background: var(--wc-done-bg); border-color: var(--wc-done-border); }
+.wc-type-missed { background: var(--wc-missed-bg); border-color: var(--wc-missed-border); }
+
+.wc-card-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-bottom: 5px;
+}
+.wc-card-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.wc-card-tag {
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wc-card-status {
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.wc-card-progress {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(0,0,0,0.08);
+  margin-top: 5px;
+  overflow: hidden;
+}
+.wc-card-progress-bar {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s;
+}
+.wc-card-actions {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+  border: none;
+  font-size: 10px;
+  color: var(--text2);
+}
+.wc-card:hover .wc-card-actions { opacity: 1; }
+
+/* Empty day slot */
+.wc-empty-slot {
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text3);
+  font-size: 18px;
+}
+.wc-empty-slot:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.wc-empty-slot.drag-over { border-color: var(--accent); background: var(--accent-light); }
+
+/* Context menu */
+.wc-ctx-menu {
+  position: fixed;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border: 1px solid var(--border);
+  padding: 6px;
+  z-index: 800;
+  min-width: 180px;
+  display: none;
+}
+.wc-ctx-menu.open { display: block; }
+.wc-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: 'Geist', sans-serif;
+  transition: background 0.12s;
+}
+.wc-ctx-item:hover { background: var(--bg); }
+.wc-ctx-item.danger { color: var(--red); }
+.wc-ctx-item.danger:hover { background: var(--red-light); }
+.wc-ctx-sep { height: 1px; background: var(--border-light); margin: 4px 0; }
+
+/* Workout detail modal */
+.wc-modal-type-bar {
+  height: 4px;
+  border-radius: 4px 4px 0 0;
+  margin: -20px -24px 20px;
+}
+.wc-ex-list { display: flex; flex-direction: column; gap: 6px; }
+.wc-ex-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.wc-ex-item.done { background: var(--wc-done-bg); border-color: var(--wc-done-border); }
+.wc-ex-num {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.06);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.wc-ex-info { flex: 1; }
+.wc-ex-name { font-size: 13px; font-weight: 500; }
+.wc-ex-target { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.wc-ex-done-mark {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Date picker for reschedule */
+.wc-reschedule-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.wc-reschedule-overlay.open { display: flex; }
+.wc-reschedule-box {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  width: 360px;
+  max-width: 100%;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+}
+
+/* Legend row */
+.wc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+.wc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.wc-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
 /* ── FORMS ── */
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:16px;}
 .field label{display:block;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;}
@@ -555,6 +894,24 @@ canvas{display:block;}
 .meas-chart-wrap { position: relative; height: 200px; margin-top: 8px; }
 
 
+/* ── CALENDAR ── */
+.cal-cell{
+  aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  border:1.5px solid transparent;transition:all 0.12s;position:relative;
+  padding:2px;font-size:13px;font-weight:500;color:var(--text);
+  background:var(--bg);
+}
+.cal-cell:hover{border-color:var(--accent-mid);background:var(--accent-light);}
+.cal-cell.today{border-color:var(--accent);font-weight:700;}
+.cal-cell.cal-done{background:var(--green-light);border-color:#86efac;color:var(--green-text);}
+.cal-cell.cal-planned{background:var(--accent-light);border-color:var(--accent-mid);color:var(--accent);}
+.cal-cell.cal-missed{background:var(--red-light);border-color:#fca5a5;color:var(--red);}
+.cal-cell.cal-rest{background:var(--bg);border-color:var(--border);color:var(--text3);}
+.cal-cell.cal-empty{background:transparent;border-color:transparent;cursor:default;color:var(--text3);opacity:0.3;}
+.cal-cell.cal-empty:hover{border-color:transparent;background:transparent;}
+.cal-dot{width:5px;height:5px;border-radius:50%;margin-top:2px;}
+
 /* Desktop: hide mobile nav */
 @media (min-width: 1025px) {
   .mobile-nav { display: none; }
@@ -744,13 +1101,36 @@ canvas{display:block;}
 
     <!-- WORKOUT -->
     <div id="page-workout" class="page">
-      <div class="page-head"><h1>План тренувань</h1><p id="workoutSchemeName">Схема</p></div>
-      <div class="day-tabs" id="dayTabsContainer"></div>
-      <div class="card card-pad">
-        <div id="workoutContent"></div>
-        <div class="save-bar">
-          <button class="btn btn-accent" onclick="saveWorkoutLog()">Зберегти тренування</button>
-          <button class="btn btn-ghost" onclick="resetWorkoutDay()">Скинути</button>
+      <div class="page-head"><h1>Тренування</h1><p id="workoutSchemeName">Тижневий план</p></div>
+
+      <!-- Week navigation -->
+      <div class="card card-pad" style="margin-bottom:14px">
+        <div class="wc-header">
+          <button class="wc-nav-btn" onclick="wcShiftWeek(-1)">&#8249;</button>
+          <div id="wcWeekLabel" class="wc-week-label"></div>
+          <button class="wc-today-btn" onclick="wcGoToday()">Сьогодні</button>
+          <button class="wc-nav-btn" onclick="wcShiftWeek(1)">&#8250;</button>
+        </div>
+        <!-- Day-of-week headers -->
+        <div class="wc-grid" id="wcDowHeaders" style="margin-bottom:6px">
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Пн</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Вт</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Ср</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Чт</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Пт</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Сб</div>
+          <div style="text-align:center;font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;padding:4px 0">Нд</div>
+        </div>
+        <!-- 7-day grid -->
+        <div class="wc-grid" id="wcGrid"></div>
+        <!-- Legend -->
+        <div class="wc-legend">
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-strength)"></div>Силові</div>
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-cardio)"></div>Кардіо</div>
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-stretch)"></div>Розтяжка</div>
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-rest)"></div>Відпочинок</div>
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-done)"></div>Виконано</div>
+          <div class="wc-legend-item"><div class="wc-legend-dot" style="background:var(--wc-missed)"></div>Пропущено</div>
         </div>
       </div>
     </div>
@@ -918,6 +1298,84 @@ canvas{display:block;}
   </div>
 </div>
 
+<!-- WORKOUT DETAIL MODAL -->
+<div id="wcDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:600;align-items:flex-end;justify-content:center;padding:0">
+  <div style="background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;display:flex;flex-direction:column;max-height:90dvh;box-shadow:0 -8px 40px rgba(0,0,0,0.15)">
+    <div id="wcDetailTypeBar" style="height:4px;border-radius:4px 4px 0 0;flex-shrink:0"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0;flex-shrink:0">
+      <div><div id="wcDetailTitle" style="font-size:17px;font-weight:600"></div><div id="wcDetailSub" style="font-size:12px;color:var(--text3);margin-top:2px"></div></div>
+      <button class="modal-close" onclick="wcCloseDetail()">✕</button>
+    </div>
+    <div id="wcDetailBody" style="padding:16px 24px;overflow-y:auto;flex:1"></div>
+    <div id="wcDetailFooter" style="padding:16px 24px;border-top:1px solid var(--border-light);display:flex;flex-wrap:wrap;gap:8px;flex-shrink:0"></div>
+  </div>
+</div>
+
+<!-- WORKOUT ACTIVE SESSION MODAL -->
+<div id="wcSessionOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:650;align-items:flex-end;justify-content:center;padding:0">
+  <div style="background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;display:flex;flex-direction:column;max-height:92dvh;box-shadow:0 -8px 40px rgba(0,0,0,0.2)">
+    <div id="wcSessionTypeBar" style="height:4px;border-radius:4px 4px 0 0;flex-shrink:0"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px 0;flex-shrink:0">
+      <div><div id="wcSessionTitle" style="font-size:17px;font-weight:600"></div><div id="wcSessionProgress" style="font-size:12px;color:var(--text3);margin-top:2px"></div></div>
+      <button class="modal-close" onclick="wcCloseSession()">✕</button>
+    </div>
+    <div id="wcSessionBody" style="padding:16px 24px;overflow-y:auto;flex:1"></div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border-light);display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-accent" style="flex:1" onclick="wcSaveSession()">Зберегти тренування</button>
+      <button class="btn btn-ghost" onclick="wcCloseSession()">Закрити</button>
+    </div>
+  </div>
+</div>
+
+<!-- WORKOUT COMPLETE OVERLAY -->
+<div id="wcCompleteOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);z-index:700;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:32px 28px;width:360px;max-width:92vw;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.2)">
+    <div style="font-size:44px;margin-bottom:12px">🎉</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">Тренування виконано!</div>
+    <div id="wcCompleteName" style="font-size:13px;color:var(--text2);margin-bottom:20px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1" onclick="wcSaveAndCloseComplete()">Зберегти</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="wcCloseComplete()">Закрити</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESCHEDULE PICKER -->
+<div id="wcRescheduleOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:900;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:20px;padding:24px;width:360px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.2)">
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px">Перенести тренування</div>
+    <div class="field" style="margin-bottom:14px"><label>Нова дата</label><input type="date" id="wcRescheduleDate" class="plan-inp" style="width:100%"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1" onclick="wcConfirmReschedule()">Перенести</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="wcCloseReschedule()">Скасувати</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="wc-ctx-menu" id="wcCtxMenu">
+  <button class="wc-ctx-item" id="wcCtxStart" onclick="wcCtxAction('start')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>Почати тренування
+  </button>
+  <button class="wc-ctx-item" id="wcCtxDone" onclick="wcCtxAction('done')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Відмітити виконаним
+  </button>
+  <div class="wc-ctx-sep"></div>
+  <button class="wc-ctx-item" id="wcCtxSkip" onclick="wcCtxAction('skip')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Перенести на наст. вільний день
+  </button>
+  <button class="wc-ctx-item" id="wcCtxReschedule" onclick="wcCtxAction('reschedule')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Вибрати дату...
+  </button>
+  <button class="wc-ctx-item" id="wcCtxRest" onclick="wcCtxAction('rest')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Вихідний день
+  </button>
+  <div class="wc-ctx-sep"></div>
+  <button class="wc-ctx-item danger" id="wcCtxMiss" onclick="wcCtxAction('miss')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Пропустити
+  </button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- RESET CONFIRM MODAL -->
@@ -998,6 +1456,7 @@ async function loadUserData() {
     userLogs = snap.docs.map(d => ({id:d.id, ...d.data()}));
     if (document.getElementById('page-history').classList.contains('active')) renderHistory();
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+    if (document.getElementById('page-workout').classList.contains('active')) renderWeekCalendar();
   });
 
   const wsSnap = await getDoc(uRef('workoutState/data'));
@@ -1005,6 +1464,7 @@ async function loadUserData() {
 
   unsubscribers = [wUnsub, mUnsub, lUnsub];
   setSyncStatus('');
+  await loadSchedule();
   updateTopbarProfile();
   updateDeadline();
   renderDashboard();
@@ -1213,7 +1673,10 @@ window.showPage=p=>{
   document.querySelectorAll('.mobile-nav-btn[data-page="'+p+'"]').forEach(x=>x.classList.add('active'));
   window.scrollTo({top:0,behavior:'smooth'});
   if(p==='dashboard')renderDashboard();
-  if(p==='workout'){currentDay=getAutoDay();renderDayTabs();renderWorkout();}
+  if(p==='workout'){
+    wcWeekOffset=0;
+    loadSchedule().then(()=>renderWeekCalendar());
+  }
   if(p==='measurements')renderMeasurements();
   if(p==='weight'){renderWeightTable();setTimeout(()=>drawChart('weightChart2',userWeights,true),50);}
   if(p==='history')renderHistory();
@@ -1337,129 +1800,6 @@ function drawChart(id,weights,compact){
   sorted.forEach((w,i)=>{ctx.beginPath();ctx.arc(xS(i),yS(w.value),3,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();ctx.strokeStyle='#f97316';ctx.lineWidth=1.5;ctx.stroke();});
   ctx.fillStyle='#9ca3af';ctx.font='9px Geist';ctx.textAlign='center';const step=Math.max(1,Math.floor(sorted.length/5));sorted.forEach((w,i)=>{if(i%step===0||i===sorted.length-1)ctx.fillText(w.date.slice(5),xS(i),H-pad.b+14);});
 }
-
-// ── WORKOUT ──
-function getAutoDay(){
-  const plan=getPlan();if(!plan.length)return 0;
-  const start=new Date(userProfile.startDate||new Date().toISOString().slice(0,10));
-  const now=new Date();
-  const daysSinceStart=Math.max(0,Math.floor((now-start)/(1000*60*60*24)));
-  return daysSinceStart%plan.length;
-}
-function renderDayTabs(){
-  const plan=getPlan();const cont=document.getElementById('dayTabsContainer');
-  const autoDay=getAutoDay();
-  cont.innerHTML=plan.map((day,i)=>{
-    const isAuto=i===autoDay;
-    const label=(day.name.match(/День \d+/)?.[0]||'День '+(i+1))+(isAuto?' ●':'');
-    return`<button class="day-tab ${i===currentDay?'active':''}" onclick="switchDay(${i})" title="${isAuto?'Сьогоднішній день за планом':''}">${label}</button>`;
-  }).join('');
-  document.getElementById('workoutSchemeName').textContent=plan.length+'-денна схема';
-}
-window.switchDay=idx=>{currentDay=idx;renderDayTabs();renderWorkout();};
-function renderWorkout(){
-  const plan=getPlan();const day=plan[currentDay]||plan[0];if(!day)return;
-  const st=workoutState[currentDay]||{};const doneCount=day.exercises.filter((_,i)=>st[i]&&st[i].done).length;
-
-  const exRows=day.exercises.map((ex,i)=>{
-    const s=st[i]||{};
-    const isTime=/сек|хв|min|sec/.test(ex.target||'');
-    // Parse suggested sets/reps from target like "4×10" or "3×45 сек"
-    const m=(ex.target||'').match(/(\d+)[×x](\d+)/);
-    const sugSets=m?m[1]:'';
-    const sugReps=m?m[2]:'';
-
-    const setsInp=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-      <label style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Підходи</label>
-      <input class="ex-inp" type="number" min="1" max="20" placeholder="${sugSets||'—'}" value="${s.sets||''}"
-        oninput="updEx(${i},'sets',this.value)" style="width:60px;text-align:center">
-    </div>`;
-
-    const repsLabel=isTime?'Секунд':'Повторень';
-    const repsMax=isTime?'3600':'200';
-    const repsSug=sugReps||'';
-    const repsInp=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-      <label style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">${repsLabel}</label>
-      <input class="ex-inp" type="number" min="1" max="${repsMax}" placeholder="${repsSug||'—'}" value="${s.reps||''}"
-        oninput="updEx(${i},'reps',this.value)" style="width:70px;text-align:center">
-    </div>`;
-
-    const noteInp=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-      <label style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Нотатка</label>
-      <input class="ex-inp" type="text" maxlength="40" placeholder="відчуття…" value="${s.note||''}"
-        oninput="updEx(${i},'note',this.value)" style="width:100px">
-    </div>`;
-
-    return`<div class="ex-row ${s.done?'done':''}" id="exrow${i}">
-      <div class="ex-name-wrap">
-        <div class="ex-name">${ex.name}</div>
-        <div class="ex-target">${ex.target}${ex.tempo?' · '+ex.tempo:''}</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:flex-end">
-        ${setsInp}${repsInp}${noteInp}
-      </div>
-      <button class="check-btn ${s.done?'done-btn':''}" onclick="toggleEx(${i})" aria-label="Позначити ${ex.name} як виконано">✓</button>
-    </div>`;
-  }).join('');
-
-  document.getElementById('workoutContent').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div>
-        <div style="font-size:16px;font-weight:600">${day.name}</div>
-        <span class="badge badge-gray" style="margin-top:5px;display:inline-flex">${day.tag}</span>
-      </div>
-      <div style="font-size:12px;color:var(--text3);font-family:'Geist Mono',monospace">${doneCount}/${day.exercises.length}</div>
-    </div>
-    ${exRows}`;
-}
-window.updEx=async(i,field,val)=>{if(!workoutState[currentDay])workoutState[currentDay]={};if(!workoutState[currentDay][i])workoutState[currentDay][i]={};workoutState[currentDay][i][field]=val;await saveWorkoutStateFB();};
-window.toggleEx=async i=>{
-  if(!workoutState[currentDay])workoutState[currentDay]={};
-  if(!workoutState[currentDay][i])workoutState[currentDay][i]={};
-  workoutState[currentDay][i].done=!workoutState[currentDay][i].done;
-  await saveWorkoutStateFB();
-  renderWorkout();
-  // Перевіряємо чи всі вправи виконані
-  const plan=getPlan();const day=plan[currentDay]||plan[0];
-  if(!day)return;
-  const st=workoutState[currentDay]||{};
-  const doneCount=day.exercises.filter((_,idx)=>st[idx]&&st[idx].done).length;
-  if(doneCount===day.exercises.length&&day.exercises.length>0){
-    // Затримка щоб renderWorkout встиг оновити UI
-    setTimeout(()=>showWorkoutCompleteDialog(),200);
-  }
-};
-function showWorkoutCompleteDialog(){
-  const plan=getPlan();const day=plan[currentDay]||plan[0];
-  const overlay=document.getElementById('workoutCompleteOverlay');
-  document.getElementById('workoutCompleteName').textContent=day.name;
-  overlay.style.display='flex';
-}
-window.closeWorkoutCompleteDialog=()=>{
-  document.getElementById('workoutCompleteOverlay').style.display='none';
-};
-window.saveWorkoutLog=async()=>{
-  setSyncStatus('Збереження...');
-  const st=workoutState[currentDay]||{};const plan=getPlan();const day=plan[currentDay]||plan[0];
-  const logData={
-    date:new Date().toISOString().slice(0,10),
-    dayIdx:currentDay,
-    dayName:day.name,
-    exercises:day.exercises.map((ex,i)=>{
-      const s=st[i]||{};
-      const sets=parseInt(s.sets)||null;
-      const reps=parseInt(s.reps)||null;
-      // Format as "3×10" if both present, else individual values
-      const setsStr=sets&&reps?`${sets}×${reps}`:sets?`${sets} підх.`:reps?`${reps}`:''  ;
-      return{name:ex.name,target:ex.target,done:!!(s.done),sets:setsStr,reps:reps?String(reps):'',note:s.note||''};
-    })
-  };
-  await addDoc(uCol('workoutLogs'),logData);
-  delete workoutState[currentDay];await saveWorkoutStateFB();setSyncStatus('');
-  document.getElementById('workoutCompleteOverlay').style.display='none';
-  showToast('✓ Тренування збережено в журнал');renderWorkout();
-};
-window.resetWorkoutDay=async()=>{delete workoutState[currentDay];await saveWorkoutStateFB();renderWorkout();};
 
 // ── MEASUREMENTS ──
 window.saveMeasurement=async()=>{
@@ -1690,6 +2030,596 @@ function addLoading(){const el=document.getElementById('chatMessages');const id=
 function removeLoading(id){const el=document.getElementById(id);if(el)el.remove();}
 window.quickAsk=t=>{document.getElementById('chatInput').value=t;window.sendMessage();};
 
+
+// ── WEEKLY WORKOUT CALENDAR ──
+// State
+let wcWeekOffset = 0; // 0 = current week
+
+// ── SCHEDULE HELPERS (Firestore overrides) ──
+let userSchedule={}; // date→{type,planDayIdx} overrides from Firestore
+
+async function loadSchedule(){
+  if(!currentUser)return;
+  try{
+    const snap=await getDocs(uCol('schedule'));
+    userSchedule={};
+    snap.docs.forEach(d=>{userSchedule[d.id]={...d.data()};});
+  }catch(e){userSchedule={};}
+}
+
+async function saveScheduleDay(date,data){
+  if(!currentUser)return;
+  await setDoc(doc(db,'users',currentUser.uid,'schedule',date),data);
+  userSchedule[date]=data;
+}
+async function deleteScheduleDay(date){
+  if(!currentUser)return;
+  await deleteDoc(doc(db,'users',currentUser.uid,'schedule',date));
+  delete userSchedule[date];
+}
+let wcSessionDate = null;
+let wcSessionPlanIdx = null;
+let wcSessionState = {}; // {exIdx: {done, sets, reps, note}}
+let wcCtxDate = null;
+let wcCtxPlanIdx = null;
+let wcRescheduleFromDate = null;
+
+// Helpers
+function wcGetWeekDates(offset = 0) {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow + 6) % 7) + offset * 7);
+  return Array.from({length: 7}, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+}
+
+function wcGetTypeInfo(tag) {
+  const t = (tag || '').toLowerCase();
+  if (/кардіо|cardio|пробіж|біг/.test(t)) return {type:'cardio', color:'var(--wc-cardio)', bg:'var(--wc-cardio-bg)', border:'var(--wc-cardio-border)'};
+  if (/розтяж|stretch|йога|yoga/.test(t)) return {type:'stretch', color:'var(--wc-stretch)', bg:'var(--wc-stretch-bg)', border:'var(--wc-stretch-border)'};
+  if (/відпочин|rest|вихід/.test(t)) return {type:'rest', color:'var(--wc-rest)', bg:'var(--wc-rest-bg)', border:'var(--wc-rest-border)'};
+  return {type:'strength', color:'var(--wc-strength)', bg:'var(--wc-strength-bg)', border:'var(--wc-strength-border)'};
+}
+
+function wcDateLabel(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const UA_DAYS = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const UA_MONTHS = ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
+  return `${UA_DAYS[d.getDay()]}, ${d.getDate()} ${UA_MONTHS[d.getMonth()]}`;
+}
+
+function wcGetAutoScheduleForDate(dateStr) {
+  const plan = getPlan(); if (!plan.length) return null;
+  // Use startDate as cycle anchor. If not set, anchor to Monday of current week.
+  let startStr = userProfile.startDate;
+  if (!startStr) {
+    const now = new Date();
+    const dow = now.getDay(); // 0=Sun
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((dow + 6) % 7));
+    startStr = monday.toISOString().slice(0, 10);
+  }
+  const start = new Date(startStr + 'T12:00:00');
+  const d = new Date(dateStr + 'T12:00:00');
+  const diff = Math.round((d - start) / (1000*60*60*24));
+  // For dates before start, cycle backwards (modulo handles negatives in JS with fix)
+  const idx = ((diff % plan.length) + plan.length) % plan.length;
+  return idx;
+}
+
+function wcGetDayStatus(dateStr) {
+  const today = new Date().toISOString().slice(0,10);
+  // Manual override (includes rest, planned, missed, done-quick set by user)
+  if (userSchedule[dateStr]) {
+    const s = userSchedule[dateStr];
+    return {type: s.type, planDayIdx: s.planDayIdx ?? null, source: 'manual'};
+  }
+  // Actually logged workout
+  const logged = userLogs.filter(l => l.date === dateStr);
+  if (logged.length) return {type:'done', planDayIdx: logged[0].dayIdx ?? null, source:'log', log: logged[0]};
+  // Auto-calculate from plan cycle
+  const autoIdx = wcGetAutoScheduleForDate(dateStr);
+  if (autoIdx === null) return {type:'none', planDayIdx:null, source:'auto'};
+  // Past days without a log = missed; today and future = planned
+  if (dateStr < today) return {type:'missed', planDayIdx:autoIdx, source:'auto'};
+  return {type:'planned', planDayIdx:autoIdx, source:'auto'};
+}
+
+// ── RENDER WEEK ──
+window.wcShiftWeek = dir => { wcWeekOffset += dir; renderWeekCalendar(); };
+window.wcGoToday = () => { wcWeekOffset = 0; renderWeekCalendar(); };
+
+function renderWeekCalendar() {
+  const dates = wcGetWeekDates(wcWeekOffset);
+  const today = new Date().toISOString().slice(0,10);
+  const plan = getPlan();
+
+  // Week label
+  const d0 = new Date(dates[0] + 'T12:00:00');
+  const d6 = new Date(dates[6] + 'T12:00:00');
+  const UA_MONTHS = ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
+  const label = d0.getMonth() === d6.getMonth()
+    ? `${d0.getDate()}–${d6.getDate()} ${UA_MONTHS[d0.getMonth()]} ${d0.getFullYear()}`
+    : `${d0.getDate()} ${UA_MONTHS[d0.getMonth()]} – ${d6.getDate()} ${UA_MONTHS[d6.getMonth()]} ${d6.getFullYear()}`;
+  document.getElementById('wcWeekLabel').textContent = label;
+
+  const grid = document.getElementById('wcGrid');
+  grid.innerHTML = dates.map((dateStr, di) => {
+    const isToday = dateStr === today;
+    const d = new Date(dateStr + 'T12:00:00');
+    const dayNum = d.getDate();
+    const status = wcGetDayStatus(dateStr);
+    const isWeekend = di >= 5;
+
+    let cardHTML = '';
+
+    if (status.type === 'rest') {
+      cardHTML = `<div class="wc-card wc-type-rest" draggable="false"
+        onclick="wcOpenDetail('${dateStr}')"
+        ondragover="wcDragOver(event,'${dateStr}')"
+        ondrop="wcDrop(event,'${dateStr}')"
+        ondragleave="wcDragLeave(event)">
+        <div class="wc-card-dot" style="background:var(--wc-rest)"></div>
+        <div class="wc-card-name" style="color:var(--text3)">Вихідний</div>
+        <div class="wc-card-actions" onclick="event.stopPropagation();wcOpenCtx(event,'${dateStr}',null)">⋯</div>
+      </div>`;
+    } else if (status.type === 'none') {
+      cardHTML = `<div class="wc-empty-slot"
+        ondragover="wcDragOver(event,'${dateStr}')"
+        ondrop="wcDrop(event,'${dateStr}')"
+        ondragleave="wcDragLeave(event)"
+        onclick="wcOpenDetail('${dateStr}')">+</div>`;
+    } else {
+      const planIdx = status.planDayIdx;
+      const day = plan[planIdx];
+      if (!day) {
+        cardHTML = `<div class="wc-empty-slot"
+          ondragover="wcDragOver(event,'${dateStr}')"
+          ondrop="wcDrop(event,'${dateStr}')"
+          ondragleave="wcDragLeave(event)"
+          onclick="wcOpenDetail('${dateStr}')">+</div>`;
+      } else {
+        const ti = wcGetTypeInfo(day.tag);
+        let typeClass = 'wc-type-' + ti.type;
+        let dotColor = ti.color;
+        let statusLabel = '';
+        let progressHTML = '';
+
+        if (status.type === 'done' || status.type === 'done-quick') {
+          typeClass = 'wc-type-done';
+          dotColor = 'var(--wc-done)';
+          const log = status.log || userLogs.find(l => l.date === dateStr);
+          if (log) {
+            const done = log.exercises.filter(e => e.done).length;
+            const pct = Math.round(done / log.exercises.length * 100);
+            statusLabel = `<div class="wc-card-status" style="color:var(--wc-done)">${done}/${log.exercises.length} вправ</div>`;
+            progressHTML = `<div class="wc-card-progress"><div class="wc-card-progress-bar" style="width:${pct}%;background:var(--wc-done)"></div></div>`;
+          } else {
+            statusLabel = `<div class="wc-card-status" style="color:var(--wc-done)">✓ Виконано</div>`;
+            progressHTML = `<div class="wc-card-progress"><div class="wc-card-progress-bar" style="width:100%;background:var(--wc-done)"></div></div>`;
+          }
+        } else if (status.type === 'missed') {
+          typeClass = 'wc-type-missed';
+          dotColor = 'var(--wc-missed)';
+          statusLabel = `<div class="wc-card-status" style="color:var(--wc-missed)">Пропущено</div>`;
+        } else if (status.type === 'planned' && isToday) {
+          statusLabel = `<div class="wc-card-status" style="color:${ti.color}">Сьогодні</div>`;
+        }
+
+        const shortName = day.name.replace(/День \d+ — /,'').replace(/День \d+/,'').trim() || day.name;
+
+        cardHTML = `<div class="wc-card ${typeClass}" draggable="true"
+          onclick="wcOpenDetail('${dateStr}')"
+          ondragstart="wcDragStart(event,'${dateStr}',${planIdx})"
+          ondragend="wcDragEnd(event)"
+          ondragover="wcDragOver(event,'${dateStr}')"
+          ondrop="wcDrop(event,'${dateStr}')"
+          ondragleave="wcDragLeave(event)">
+          <div class="wc-card-dot" style="background:${dotColor}"></div>
+          <div class="wc-card-name">${shortName}</div>
+          <div class="wc-card-tag">${day.tag || ''}</div>
+          ${statusLabel}
+          ${progressHTML}
+          <button class="wc-card-actions" onclick="event.stopPropagation();wcOpenCtx(event,'${dateStr}',${planIdx})">⋯</button>
+        </div>`;
+      }
+    }
+
+    return `<div class="wc-day">
+      <div class="wc-day-head ${isToday ? 'today' : ''}">
+        ${isToday
+          ? `<div class="wc-date-num">${dayNum}</div>`
+          : `<div class="wc-date-num" style="color:${isWeekend?'var(--red)':'var(--text)'}">${dayNum}</div>`
+        }
+      </div>
+      ${cardHTML}
+    </div>`;
+  }).join('');
+
+  // Scheme name
+  document.getElementById('workoutSchemeName').textContent = plan.length ? `${plan.length}-денна схема` : 'Тижневий план';
+}
+
+// ── DRAG & DROP ──
+let _dragDate = null, _dragPlanIdx = null;
+function wcDragStart(ev, dateStr, planIdx) {
+  _dragDate = dateStr; _dragPlanIdx = planIdx;
+  ev.currentTarget.classList.add('dragging');
+  ev.dataTransfer.effectAllowed = 'move';
+}
+function wcDragEnd(ev) { ev.currentTarget.classList.remove('dragging'); }
+function wcDragOver(ev, dateStr) {
+  ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
+  ev.currentTarget.classList.add('drag-over');
+}
+function wcDragLeave(ev) { ev.currentTarget.classList.remove('drag-over'); }
+async function wcDrop(ev, targetDate) {
+  ev.currentTarget.classList.remove('drag-over');
+  if (!_dragDate || _dragDate === targetDate) return;
+  // Move training from _dragDate to targetDate
+  const srcStatus = wcGetDayStatus(_dragDate);
+  const tgtStatus = wcGetDayStatus(targetDate);
+  const planIdx = _dragPlanIdx ?? srcStatus.planDayIdx;
+  if (planIdx === null) return;
+  // Set target day to this plan
+  await saveScheduleDay(targetDate, {type:'planned', planDayIdx: planIdx});
+  // Always mark source as rest so the auto-cycle doesn't re-show workout there
+  await saveScheduleDay(_dragDate, {type:'rest', planDayIdx:null});
+  _dragDate = null; _dragPlanIdx = null;
+  renderWeekCalendar();
+  showToast('Тренування перенесено');
+}
+
+// ── CONTEXT MENU ──
+window.wcOpenCtx = (ev, dateStr, planIdx) => {
+  ev.stopPropagation();
+  wcCtxDate = dateStr; wcCtxPlanIdx = planIdx;
+  const menu = document.getElementById('wcCtxMenu');
+  const today = new Date().toISOString().slice(0,10);
+  const status = wcGetDayStatus(dateStr);
+  const isPast = dateStr < today;
+  // Show/hide items based on context
+  document.getElementById('wcCtxStart').style.display = (planIdx !== null && (!isPast || dateStr === today)) ? '' : 'none';
+  const isDone = status.type === 'done' || status.type === 'done-quick';
+  document.getElementById('wcCtxDone').style.display = (planIdx !== null && !isDone) ? '' : 'none';
+  document.getElementById('wcCtxSkip').style.display = (planIdx !== null && !isDone) ? '' : 'none';
+  document.getElementById('wcCtxReschedule').style.display = (planIdx !== null) ? '' : 'none';
+  document.getElementById('wcCtxRest').style.display = status.type !== 'rest' ? '' : 'none';
+  document.getElementById('wcCtxMiss').style.display = (status.type !== 'missed' && !isDone) ? '' : 'none';
+  menu.classList.add('open');
+  // Position menu
+  const rect = (ev.currentTarget || ev.target).getBoundingClientRect();
+  let left = rect.right + 4, top = rect.top;
+  if (left + 190 > window.innerWidth) left = rect.left - 194;
+  if (top + 280 > window.innerHeight) top = window.innerHeight - 290;
+  menu.style.left = left + 'px';
+  menu.style.top = Math.max(8, top) + 'px';
+};
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#wcCtxMenu')) document.getElementById('wcCtxMenu').classList.remove('open');
+});
+
+window.wcCtxAction = async (action) => {
+  document.getElementById('wcCtxMenu').classList.remove('open');
+  const dateStr = wcCtxDate;
+  const planIdx = wcCtxPlanIdx;
+  if (!dateStr) return;
+
+  if (action === 'start') {
+    wcOpenSession(dateStr, planIdx);
+  } else if (action === 'done') {
+    // Quick mark as done without logging
+    await saveScheduleDay(dateStr, {type:'done-quick', planDayIdx: planIdx});
+    renderWeekCalendar();
+    showToast('Відмічено як виконане');
+  } else if (action === 'skip') {
+    // Move to next free day
+    const nextFree = wcFindNextFreeDay(dateStr);
+    if (nextFree && planIdx !== null) {
+      await saveScheduleDay(nextFree, {type:'planned', planDayIdx: planIdx});
+      await saveScheduleDay(dateStr, {type:'rest', planDayIdx:null});
+      renderWeekCalendar();
+      showToast('Перенесено на ' + wcDateLabel(nextFree));
+    } else {
+      showToast('Немає вільних днів поруч', true);
+    }
+  } else if (action === 'reschedule') {
+    wcRescheduleFromDate = dateStr;
+    document.getElementById('wcRescheduleDate').value = '';
+    document.getElementById('wcRescheduleOverlay').style.display = 'flex';
+  } else if (action === 'rest') {
+    await saveScheduleDay(dateStr, {type:'rest', planDayIdx:null});
+    renderWeekCalendar();
+    showToast('Вихідний відмічено');
+  } else if (action === 'miss') {
+    await saveScheduleDay(dateStr, {type:'missed', planDayIdx: planIdx});
+    renderWeekCalendar();
+    showToast('Тренування пропущено');
+  }
+};
+
+function wcFindNextFreeDay(fromDate) {
+  const today = new Date().toISOString().slice(0,10);
+  for (let i = 1; i <= 14; i++) {
+    const d = new Date(fromDate + 'T12:00:00');
+    d.setDate(d.getDate() + i);
+    const ds = d.toISOString().slice(0,10);
+    if (ds < today) continue;
+    const st = wcGetDayStatus(ds);
+    if (st.type === 'none' || st.type === 'rest') return ds;
+  }
+  return null;
+}
+
+// ── RESCHEDULE ──
+window.wcConfirmReschedule = async () => {
+  const newDate = document.getElementById('wcRescheduleDate').value;
+  if (!newDate) { showToast('Обери дату', true); return; }
+  const srcStatus = wcGetDayStatus(wcRescheduleFromDate);
+  const planIdx = wcCtxPlanIdx ?? srcStatus.planDayIdx;
+  if (planIdx !== null) {
+    await saveScheduleDay(newDate, {type:'planned', planDayIdx: planIdx});
+    await saveScheduleDay(wcRescheduleFromDate, {type:'rest', planDayIdx:null});
+  }
+  document.getElementById('wcRescheduleOverlay').style.display = 'none';
+  // Navigate to that week
+  const today = new Date().toISOString().slice(0,10);
+  const td = new Date(today + 'T12:00:00');
+  const nd = new Date(newDate + 'T12:00:00');
+  const diffW = Math.round((nd - td) / (7*24*60*60*1000));
+  wcWeekOffset = diffW;
+  renderWeekCalendar();
+  showToast('Перенесено на ' + wcDateLabel(newDate));
+};
+window.wcCloseReschedule = () => { document.getElementById('wcRescheduleOverlay').style.display = 'none'; };
+
+// ── DETAIL MODAL (view workout info) ──
+window.wcOpenDetail = async (dateStr) => {
+  await loadSchedule();
+  const plan = getPlan();
+  const status = wcGetDayStatus(dateStr);
+  const today = new Date().toISOString().slice(0,10);
+  const isPast = dateStr < today;
+  const isToday = dateStr === today;
+  const planIdx = status.planDayIdx;
+  const day = planIdx !== null ? plan[planIdx] : null;
+  const ti = day ? wcGetTypeInfo(day.tag) : {color:'var(--text3)', bg:'var(--bg)', border:'var(--border)'};
+
+  document.getElementById('wcDetailTypeBar').style.background = ti.color;
+  document.getElementById('wcDetailTitle').textContent = wcDateLabel(dateStr);
+  document.getElementById('wcDetailSub').textContent = day ? day.name : (status.type === 'rest' ? 'Вихідний день' : 'Вільний день');
+
+  const statusLabels = {done:'✓ Виконано',planned:'Заплановано',missed:'Пропущено',rest:'Вихідний','done-quick':'✓ Виконано',none:'Вільний'};
+  const statusColors = {done:'var(--wc-done)',planned:ti.color,missed:'var(--wc-missed)',rest:'var(--wc-rest)','done-quick':'var(--wc-done)',none:'var(--text3)'};
+
+  let body = `<div style="margin-bottom:14px"><span class="badge" style="background:${statusColors[status.type]}22;color:${statusColors[status.type]};border:1px solid ${statusColors[status.type]}44">${statusLabels[status.type]||status.type}</span></div>`;
+
+  // Logged workout summary
+  const logged = userLogs.filter(l => l.date === dateStr);
+  if (logged.length) {
+    logged.forEach(log => {
+      const done = log.exercises.filter(e => e.done).length;
+      body += `<div style="background:var(--wc-done-bg);border:1px solid var(--wc-done-border);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)">${log.dayName}</div>
+        <div style="font-size:12px;color:var(--wc-done);margin-bottom:8px">${done}/${log.exercises.length} вправ виконано</div>
+        <div class="wc-ex-list">
+        ${log.exercises.map(e => `<div class="wc-ex-item ${e.done?'done':''}">
+          <div class="wc-ex-done-mark" style="background:${e.done?'var(--wc-done-bg)':'var(--bg)'};color:${e.done?'var(--wc-done)':'var(--text3)'}">
+            ${e.done?'✓':'○'}
+          </div>
+          <div class="wc-ex-info"><div class="wc-ex-name">${e.name}</div><div class="wc-ex-target">${e.target||''}${e.sets?' · '+e.sets:''}</div></div>
+        </div>`).join('')}
+        </div>
+      </div>`;
+    });
+  } else if (day) {
+    // Plan preview
+    body += `<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Програма</div>
+      <div class="wc-ex-list">
+      ${day.exercises.map((ex, i) => `<div class="wc-ex-item">
+        <div class="wc-ex-num">${i+1}</div>
+        <div class="wc-ex-info"><div class="wc-ex-name">${ex.name}</div><div class="wc-ex-target">${ex.target||''}${ex.tempo?' · '+ex.tempo:''}</div></div>
+      </div>`).join('')}
+      </div>
+    </div>`;
+
+    // Plan day selector for missed/future
+    if (!isPast || status.type === 'missed') {
+      body += `<div style="margin-top:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Інший день плану</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${plan.map((pd, i) => {
+            const active = i === planIdx;
+            return `<button onclick="wcSetDayPlan('${dateStr}',${i})" class="day-tab ${active?'active':''}" style="font-size:11px;padding:5px 12px">${pd.name.match(/День \d+/)?.[0]||'День '+(i+1)}</button>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
+  document.getElementById('wcDetailBody').innerHTML = body;
+
+  // Footer actions
+  let footer = '';
+  if (day && (isToday || !isPast) && status.type !== 'done' && status.type !== 'done-quick') {
+    footer += `<button class="btn btn-accent" onclick="wcCloseDetail();wcOpenSession('${dateStr}',${planIdx})">
+      ${isToday ? '▶ Почати тренування' : 'Відкрити тренування'}
+    </button>`;
+  }
+  if (status.type === 'rest') {
+    footer += `<button class="btn btn-ghost" onclick="wcUnsetRest('${dateStr}')">Скасувати вихідний</button>`;
+  } else if (!logged.length && status.type !== 'done' && status.type !== 'done-quick') {
+    footer += `<button class="btn btn-ghost" onclick="wcSetRest('${dateStr}')">Вихідний день</button>`;
+  }
+  if (status.source === 'manual') {
+    footer += `<button class="btn btn-ghost" style="color:var(--text3)" onclick="wcResetDay('${dateStr}')">Скинути до авто</button>`;
+  }
+  document.getElementById('wcDetailFooter').innerHTML = footer;
+  document.getElementById('wcDetailOverlay').style.display = 'flex';
+};
+
+window.wcCloseDetail = () => { document.getElementById('wcDetailOverlay').style.display = 'none'; };
+window.wcSetDayPlan = async (dateStr, planIdx) => {
+  await saveScheduleDay(dateStr, {type:'planned', planDayIdx: planIdx});
+  renderWeekCalendar();
+  await wcOpenDetail(dateStr);
+};
+window.wcSetRest = async (dateStr) => {
+  await saveScheduleDay(dateStr, {type:'rest', planDayIdx:null});
+  renderWeekCalendar(); wcCloseDetail(); showToast('Вихідний відмічено');
+};
+window.wcUnsetRest = async (dateStr) => {
+  await deleteScheduleDay(dateStr);
+  renderWeekCalendar(); await wcOpenDetail(dateStr);
+};
+window.wcResetDay = async (dateStr) => {
+  await deleteScheduleDay(dateStr);
+  renderWeekCalendar(); await wcOpenDetail(dateStr);
+};
+
+// ── ACTIVE SESSION ──
+window.wcOpenSession = (dateStr, planIdx) => {
+  const plan = getPlan();
+  const day = plan[planIdx];
+  if (!day) return;
+  wcSessionDate = dateStr;
+  wcSessionPlanIdx = planIdx;
+  wcSessionState = {};
+  const ti = wcGetTypeInfo(day.tag);
+  document.getElementById('wcSessionTypeBar').style.background = ti.color;
+  document.getElementById('wcSessionTitle').textContent = day.name;
+  wcRenderSession();
+  document.getElementById('wcSessionOverlay').style.display = 'flex';
+};
+
+function wcRenderSession() {
+  const plan = getPlan();
+  const day = plan[wcSessionPlanIdx];
+  if (!day) return;
+  const st = wcSessionState;
+  const doneCount = day.exercises.filter((_,i) => st[i]?.done).length;
+
+  document.getElementById('wcSessionProgress').textContent = `${doneCount}/${day.exercises.length} вправ виконано`;
+
+  document.getElementById('wcSessionBody').innerHTML = day.exercises.map((ex, i) => {
+    const s = st[i] || {};
+    const m = (ex.target||'').match(/(\d+)[×x](\d+)/);
+    const sugSets = m ? m[1] : '';
+    const sugReps = m ? m[2] : '';
+    const isTime = /сек|хв|min|sec/.test(ex.target||'');
+
+    return `<div class="wc-ex-item ${s.done?'done':''}" id="wcex${i}" style="flex-wrap:wrap;gap:6px">
+      <div class="wc-ex-num" style="background:${s.done?'var(--wc-done)':'rgba(0,0,0,0.06)'};color:${s.done?'white':'var(--text3)'}">
+        ${s.done ? '✓' : (i+1)}
+      </div>
+      <div class="wc-ex-info" style="flex:1;min-width:100px">
+        <div class="wc-ex-name">${ex.name}</div>
+        <div class="wc-ex-target">${ex.target||''}${ex.tempo?' · '+ex.tempo:''}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase">Підходи</div>
+          <input class="ex-inp" type="number" min="1" max="20" placeholder="${sugSets||'—'}" value="${s.sets||''}"
+            oninput="wcUpdEx(${i},'sets',this.value)" style="width:52px;text-align:center">
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase">${isTime?'Сек':'Пов'}</div>
+          <input class="ex-inp" type="number" min="1" max="${isTime?3600:200}" placeholder="${sugReps||'—'}" value="${s.reps||''}"
+            oninput="wcUpdEx(${i},'reps',this.value)" style="width:52px;text-align:center">
+        </div>
+        <button class="check-btn ${s.done?'done-btn':''}" onclick="wcToggleEx(${i})" style="flex-shrink:0">✓</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.wcUpdEx = (i, field, val) => {
+  if (!wcSessionState[i]) wcSessionState[i] = {};
+  wcSessionState[i][field] = val;
+};
+window.wcToggleEx = (i) => {
+  if (!wcSessionState[i]) wcSessionState[i] = {};
+  wcSessionState[i].done = !wcSessionState[i].done;
+  wcRenderSession();
+  // Check all done
+  const plan = getPlan();
+  const day = plan[wcSessionPlanIdx];
+  if (day) {
+    const allDone = day.exercises.every((_,idx) => wcSessionState[idx]?.done);
+    if (allDone) {
+      setTimeout(() => {
+        document.getElementById('wcCompleteName').textContent = day.name;
+        document.getElementById('wcCompleteOverlay').style.display = 'flex';
+      }, 300);
+    }
+  }
+};
+
+window.wcSaveSession = async () => {
+  const plan = getPlan();
+  const day = plan[wcSessionPlanIdx];
+  if (!day || !wcSessionDate) return;
+  const exercises = day.exercises.map((ex, i) => {
+    const s = wcSessionState[i] || {};
+    return {...ex, done: s.done||false, sets: s.sets||'', reps: s.reps||'', note: s.note||''};
+  });
+  setSyncStatus('Збереження...');
+  await addDoc(uCol('workoutLogs'), {
+    date: wcSessionDate,
+    dayName: day.name,
+    dayIdx: wcSessionPlanIdx,
+    exercises,
+    savedAt: new Date().toISOString()
+  });
+  setSyncStatus('');
+  showToast('✓ Тренування збережено');
+  wcCloseSession();
+  wcCloseComplete();
+  renderWeekCalendar();
+};
+
+window.wcCloseSession = () => {
+  document.getElementById('wcSessionOverlay').style.display = 'none';
+};
+window.wcCloseComplete = () => {
+  document.getElementById('wcCompleteOverlay').style.display = 'none';
+};
+window.wcSaveAndCloseComplete = async () => {
+  await wcSaveSession();
+};
+
+// ── BACKWARD COMPAT: keep saveWorkoutLog for history page ──
+window.saveWorkoutLog = () => { if (wcSessionDate !== null) wcSaveSession(); };
+window.resetWorkoutDay = () => { wcSessionState = {}; wcRenderSession && wcRenderSession(); };
+
+// ── OLD COMPAT STUBS (kept for showPage) ──
+function getAutoDay(){ return 0; }
+function renderDayTabs(){}
+function renderWorkout(){}
+window.switchDay = () => {};
+window.switchWorkoutTab = () => {};
+window.updEx = () => {};
+window.toggleEx = () => {};
+window.showWorkoutCompleteDialog = () => {};
+window.closeWorkoutCompleteDialog = () => { wcCloseComplete(); };
+window.startCalWorkout = (dateStr, planIdx) => { wcOpenSession(dateStr, planIdx); };
+window.openCalDay = async (dateStr) => { await wcOpenDetail(dateStr); };
+window.closeCalDay = () => { wcCloseDetail(); };
+window.calShift = () => {};
+window.setCalPlan = async (dateStr, planIdx) => { await wcSetDayPlan(dateStr, planIdx); };
+window.setCalRest = async (dateStr) => { await wcSetRest(dateStr); };
+window.unsetCalRest = async (dateStr) => { await wcUnsetRest(dateStr); };
+window.resetCalDay = async (dateStr) => { await wcResetDay(dateStr); };
+
+// Backward compat — schedule helpers already exist: saveScheduleDay, deleteScheduleDay, loadSchedule
+// getDayStatus redirects to wcGetDayStatus for calendar render used in old code
+function getDayStatus(dateStr){ return wcGetDayStatus(dateStr); }
 // ── INLINE CONFIRM ──
 function showInlineConfirm(msg){
   return new Promise(resolve=>{
@@ -1711,6 +2641,9 @@ const today=new Date().toISOString().slice(0,10);
 document.getElementById('weightDate').value=today;
 document.getElementById('measDate').value=today;
 document.getElementById('profileModal').addEventListener('click',function(e){if(e.target===this)closeProfile();});
+document.getElementById('wcDetailOverlay').addEventListener('click',function(e){if(e.target===this)wcCloseDetail();});
+document.getElementById('wcSessionOverlay').addEventListener('click',function(e){if(e.target===this)wcCloseSession();});
+document.getElementById('wcRescheduleOverlay').addEventListener('click',function(e){if(e.target===this)wcCloseReschedule();});
 window.addEventListener('resize',()=>{
   if(document.getElementById('page-dashboard').classList.contains('active'))drawChart('weightChart',userWeights,false);
   if(document.getElementById('page-weight').classList.contains('active'))drawChart('weightChart2',userWeights,true);
