@@ -595,6 +595,56 @@ body{font-family:'Geist',sans-serif;font-weight:300;background:var(--bg);color:v
 .syncing{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px;}
 canvas{display:block;}
 
+/* ── NUTRITION PAGE ── */
+.nutr-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.nutr-tab{padding:7px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Geist',sans-serif;transition:all 0.15s;}
+.nutr-tab:hover{border-color:var(--accent);color:var(--accent);}
+.nutr-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
+.nutr-section{display:none;}.nutr-section.active{display:block;}
+.meal-day-tabs{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap;}
+.meal-day-tab{padding:5px 13px;border-radius:50px;border:1.5px solid var(--border);background:transparent;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Geist',sans-serif;transition:all 0.15s;}
+.meal-day-tab:hover{border-color:var(--accent);color:var(--accent);}
+.meal-day-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
+.meal-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;transition:border-color 0.15s;}
+.meal-card:hover{border-color:var(--accent-mid);}
+.meal-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.meal-time{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:50px;}
+.meal-name{font-size:14px;font-weight:600;}
+.meal-items{font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:8px;}
+.meal-macros{display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--border-light);}
+.m-macro{font-size:11px;color:var(--text3);}
+.m-macro span{font-weight:600;color:var(--text);}
+.day-macro-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.d-macro-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.d-macro-val{font-size:20px;font-weight:300;font-family:'Geist Mono',monospace;}
+.d-macro-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;font-weight:700;}
+.tip-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;}
+.tip-icon{font-size:20px;margin-bottom:8px;}
+.tip-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.tip-text{font-size:12px;color:var(--text2);line-height:1.7;}
+.recipe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;}
+.recipe-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.recipe-title{font-size:14px;font-weight:600;}
+.recipe-badge{font-size:11px;padding:2px 8px;border-radius:50px;background:var(--green-card);color:var(--green-text);font-weight:600;}
+.recipe-meta{display:flex;gap:12px;margin-bottom:12px;}
+.recipe-meta span{font-size:11px;color:var(--text3);}
+.recipe-steps{font-size:12px;color:var(--text2);line-height:1.8;padding-left:0;list-style:none;}
+.recipe-steps li{padding:3px 0;padding-left:16px;position:relative;}
+.recipe-steps li::before{content:'→';position:absolute;left:0;color:var(--accent);font-weight:700;}
+.nutr-info-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.nutr-info-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;}
+.nutr-info-val{font-size:24px;font-weight:300;font-family:'Geist Mono',monospace;color:var(--text);}
+.nutr-info-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-top:3px;}
+.progress-ring-wrap{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:18px;}
+.motiv-banner{background:linear-gradient(135deg,#111 0%,#1a1a2e 100%);color:white;border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;position:relative;overflow:hidden;}
+.motiv-banner::before{content:'';position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:var(--accent);opacity:0.08;border-radius:50%;}
+.motiv-quote{font-size:15px;font-weight:500;line-height:1.5;margin-bottom:10px;}
+.motiv-author{font-size:11px;opacity:0.5;text-transform:uppercase;letter-spacing:0.8px;}
+.motiv-days-row{display:flex;gap:4px;margin-top:14px;}
+.motiv-day-dot{width:20px;height:6px;border-radius:3px;background:rgba(255,255,255,0.15);}
+.motiv-day-dot.done{background:var(--accent);}
+.motiv-day-dot.today{background:rgba(249,115,22,0.5);}
+
 /* ── iOS / MOBILE ADAPTATIONS ── */
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
@@ -973,6 +1023,10 @@ canvas{display:block;}
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       <span class="tooltip">Журнал</span>
     </button>
+    <button class="nav-btn" onclick="showPage('nutrition')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
+      <span class="tooltip">Харчування</span>
+    </button>
     <button class="nav-btn" onclick="showPage('ai')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><path d="M7 11V9a5 5 0 0 1 10 0v2"/></svg>
       <span class="tooltip">AI Тренер</span>
@@ -1004,6 +1058,10 @@ canvas{display:block;}
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
     <span class="mobile-nav-label">Вага</span>
   </button>
+  <button class="mobile-nav-btn" onclick="showPage('nutrition')" data-page="nutrition">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
+    <span class="mobile-nav-label">Їжа</span>
+  </button>
   <button class="mobile-nav-btn" onclick="showPage('ai')" data-page="ai">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><path d="M7 11V9a5 5 0 0 1 10 0v2"/></svg>
     <span class="mobile-nav-label">AI</span>
@@ -1028,6 +1086,12 @@ canvas{display:block;}
 
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
+      <!-- MOTIVATION BANNER -->
+      <div class="motiv-banner" id="motivBanner">
+        <div class="motiv-quote" id="motivQuote">"Твоє тіло може все. Твій розум потрібно переконати першим."</div>
+        <div class="motiv-author">Дедлайн: <span id="motivDeadlineLabel">25 серпня 2026</span> · <span id="motivDaysLeft">—</span> днів залишилось</div>
+        <div class="motiv-days-row" id="motivDaysRow"></div>
+      </div>
       <!-- Onboarding banner for new users -->
       <div id="profileOnboardingBanner" style="display:none;background:linear-gradient(135deg,#fff4ed,#fed7aa);border:1.5px solid var(--accent-mid);border-radius:var(--radius);padding:16px 20px;margin-bottom:18px;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap">
         <div>
@@ -1217,6 +1281,255 @@ canvas{display:block;}
         <div class="chat-bottom">
           <input type="text" class="chat-input" id="chatInput" placeholder="Запитай тренера..." onkeydown="if(event.key==='Enter')sendMessage()">
           <button class="btn btn-accent" onclick="sendMessage()" style="padding:10px 20px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div id="page-nutrition" class="page">
+      <div class="page-head"><h1>Харчування</h1><p>План реокомпозиції — 8 тижнів · ціль: 8/10</p></div>
+
+      <!-- Info row -->
+      <div class="nutr-info-row">
+        <div class="nutr-info-card">
+          <div class="nutr-info-val">1950</div>
+          <div class="nutr-info-label">Ккал/день</div>
+        </div>
+        <div class="nutr-info-card">
+          <div class="nutr-info-val" style="color:var(--accent)">160г</div>
+          <div class="nutr-info-label">Білок (мін.)</div>
+        </div>
+        <div class="nutr-info-card">
+          <div class="nutr-info-val" style="color:var(--blue)">200г</div>
+          <div class="nutr-info-label">Вуглеводи</div>
+        </div>
+        <div class="nutr-info-card">
+          <div class="nutr-info-val" style="color:var(--green)">52г</div>
+          <div class="nutr-info-label">Жири</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="nutr-tabs">
+        <button class="nutr-tab active" onclick="switchNutrTab('menu',this)">Меню на тиждень</button>
+        <button class="nutr-tab" onclick="switchNutrTab('recipes',this)">Рецепти</button>
+        <button class="nutr-tab" onclick="switchNutrTab('tips',this)">Поради</button>
+        <button class="nutr-tab" onclick="switchNutrTab('rules',this)">Правила</button>
+      </div>
+
+      <!-- MENU SECTION -->
+      <div class="nutr-section active" id="nutr-menu">
+        <div class="meal-day-tabs" id="mealDayTabs">
+          <button class="meal-day-tab active" onclick="switchMealDay(0,this)">Пн</button>
+          <button class="meal-day-tab" onclick="switchMealDay(1,this)">Вт</button>
+          <button class="meal-day-tab" onclick="switchMealDay(2,this)">Ср</button>
+          <button class="meal-day-tab" onclick="switchMealDay(3,this)">Чт</button>
+          <button class="meal-day-tab" onclick="switchMealDay(4,this)">Пт</button>
+          <button class="meal-day-tab" onclick="switchMealDay(5,this)">Сб</button>
+          <button class="meal-day-tab" onclick="switchMealDay(6,this)">Нд</button>
+        </div>
+        <div id="mealDayContent"></div>
+      </div>
+
+      <!-- RECIPES SECTION -->
+      <div class="nutr-section" id="nutr-recipes">
+        <div class="recipe-card">
+          <div class="recipe-head">
+            <div class="recipe-title">Вівсянка з яйцями і творогом</div>
+            <span class="recipe-badge">Сніданок</span>
+          </div>
+          <div class="recipe-meta">
+            <span>⏱ 10 хв</span><span>🔥 500 ккал</span><span>💪 36г білка</span>
+          </div>
+          <ul class="recipe-steps">
+            <li>Вівсянку (80г) залити окропом або зварити на воді 5 хв — без молока і цукру</li>
+            <li>3 яйця зварити або посмажити без олії (антипригарна сковорода)</li>
+            <li>Творог 100г (5%) додати зверху до вівсянки або окремо</li>
+            <li>Посолити за смаком. Можна додати корицю або ваніль без цукру</li>
+          </ul>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">Б: 36г · В: 54г · Ж: 14г</div>
+        </div>
+        <div class="recipe-card">
+          <div class="recipe-head">
+            <div class="recipe-title">Куряче філе гриль з гречкою</div>
+            <span class="recipe-badge" style="background:var(--purple-card);color:#7c3aed">Обід</span>
+          </div>
+          <div class="recipe-meta">
+            <span>⏱ 25 хв</span><span>🔥 510 ккал</span><span>💪 52г білка</span>
+          </div>
+          <ul class="recipe-steps">
+            <li>Гречку (80г сухої) відварити в підсоленій воді 15 хв — 1:2</li>
+            <li>Філе (220г) натерти сіллю, перцем, часником. Залишити 5 хв</li>
+            <li>Смажити на сухій сковороді-гриль 4-5 хв з кожного боку</li>
+            <li>Нарізати огірок і помідор. Полити лимоном — без олії</li>
+            <li>Подавати: гречка + філе + свіжий салат</li>
+          </ul>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">Б: 52г · В: 56г · Ж: 7г</div>
+        </div>
+        <div class="recipe-card">
+          <div class="recipe-head">
+            <div class="recipe-title">Млинці білкові (субота)</div>
+            <span class="recipe-badge" style="background:var(--yellow-card);color:#92400e">Особливий</span>
+          </div>
+          <div class="recipe-meta">
+            <span>⏱ 15 хв</span><span>🔥 560 ккал</span><span>💪 32г білка</span>
+          </div>
+          <ul class="recipe-steps">
+            <li>2 яйця + 100мл води + щіпка солі — збити виделкою</li>
+            <li>Додати 4 ст.л. вівсяного борошна (або подрібненої вівсянки)</li>
+            <li>Смажити без олії на антипригарній сковороді — 3 шт</li>
+            <li>Начинка: творог 150г з дрібкою ванілі або корицею</li>
+            <li>БЕЗ цукру, меду, варення — тільки ягоди або банан за бажанням</li>
+          </ul>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">Б: 32г · В: 68г · Ж: 16г · Дозволено тільки на сніданок в суботу</div>
+        </div>
+        <div class="recipe-card">
+          <div class="recipe-head">
+            <div class="recipe-title">Куряче філе з тушкованими овочами</div>
+            <span class="recipe-badge" style="background:var(--green-card);color:var(--green-text)">Вечеря</span>
+          </div>
+          <div class="recipe-meta">
+            <span>⏱ 20 хв</span><span>🔥 360 ккал</span><span>💪 41г білка</span>
+          </div>
+          <ul class="recipe-steps">
+            <li>Філе (180г) нарізати кубиками, посолити, поперчити</li>
+            <li>Смажити на сухій сковороді 5-6 хв помішуючи</li>
+            <li>Додати нарізані броколі, морква, цибуля (200г загалом)</li>
+            <li>Влити 50мл води, накрити кришкою, тушкувати 10 хв</li>
+            <li>В кінці — 1 ч.л. оливкової олії і зелень</li>
+          </ul>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">Б: 41г · В: 14г · Ж: 9г</div>
+        </div>
+        <div class="recipe-card">
+          <div class="recipe-head">
+            <div class="recipe-title">Пізній перекус — творог</div>
+            <span class="recipe-badge" style="background:var(--bg);color:var(--text2);border:1px solid var(--border)">Вечір</span>
+          </div>
+          <div class="recipe-meta">
+            <span>⏱ 1 хв</span><span>🔥 90 ккал</span><span>💪 17г білка</span>
+          </div>
+          <ul class="recipe-steps">
+            <li>Творог 100г (знежирений або 2%) — ЗА 1-1.5 год до сну</li>
+            <li>Казеїновий білок у творозі засвоюється повільно — живить м'язи вночі</li>
+            <li>Можна додати корицю або 5г несолоних горіхів</li>
+            <li>Не пропускати! Це критично для збереження м'язів при дефіциті</li>
+          </ul>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">Б: 17г · В: 4г · Ж: 1г</div>
+        </div>
+      </div>
+
+      <!-- TIPS SECTION -->
+      <div class="nutr-section" id="nutr-tips">
+        <div class="card card-pad" style="margin-bottom:14px">
+          <div class="sec-head"><span class="sec-title">🎯 Ключові принципи</span></div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.9">
+            <strong style="color:var(--text)">Реокомпозиція</strong> — це одночасне спалювання жиру і збереження/набору м'язів. Для цього потрібен помірний дефіцит калорій (200-400 ккал) при <em>дуже</em> високому білку.
+            <br><br>
+            Головне правило: <strong style="color:var(--accent)">160г білка на день — без виключень</strong>. При дефіциті калорій, без достатнього білка, організм "їсть" м'язи замість жиру.
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+          <div class="tip-card">
+            <div class="tip-icon">⏰</div>
+            <div class="tip-title">Час прийомів їжі</div>
+            <div class="tip-text">Їж кожні 3-4 години. Не пропускай сніданок — запускає метаболізм. Вечеря до 20:00. Пізній перекус (творог) за 1-1.5 год до сну.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">💧</div>
+            <div class="tip-title">Вода — 2.5-3 л/день</div>
+            <div class="tip-text">Вода прискорює метаболізм, виводить продукти розпаду жиру, прибирає затримку рідини. Пий рівномірно протягом дня, не залпом.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">🍳</div>
+            <div class="tip-title">Способи приготування</div>
+            <div class="tip-text">Варіння, гриль без олії, тушкування на воді, запікання. Смажене на олії — тільки на антипригарній без олії. Ніяких соусів з цукром.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">🥗</div>
+            <div class="tip-title">Вуглеводи — коли є</div>
+            <div class="tip-text">Вуглеводи (гречка, рис, макарони, картопля) — до обіду і до тренування. Ввечері — тільки овочі. Це прискорює жироспалення під час сну.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">🧀</div>
+            <div class="tip-title">Сир — обережно</div>
+            <div class="tip-text">Твердий сир — джерело жирів і калорій. Порція 15-20г максимум. Тільки як доповнення, не основне джерело білка. Рахуй у денний ліміт.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">🚫</div>
+            <div class="tip-title">Суворі заборони</div>
+            <div class="tip-text">Алкоголь (зупиняє жироспалення на 48 год), цукор, солодощі, хліб, борошняне. Навіть "трохи" пива раз на тиждень — мінус 2-3 дні прогресу.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">😴</div>
+            <div class="tip-title">Сон — 7-8 годин</div>
+            <div class="tip-text">При нестачі сну кортизол росте, жир не горить, м'язи не відновлюються. Це фізіологія, не рекомендація. Сон = частина тренувального процесу.</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">📅</div>
+            <div class="tip-title">Субота — гнучкість</div>
+            <div class="tip-text">Млинці на сніданок в суботу — дозволено. Це не читміл, а психологічна гнучкість яка допомагає тримати план 7 днів. Решта дня — за планом.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RULES SECTION -->
+      <div class="nutr-section" id="nutr-rules">
+        <div class="motiv-banner" style="margin-bottom:18px">
+          <div class="motiv-quote">"8/10 — це не генетика. Це 8 тижнів чесної роботи."</div>
+          <div class="motiv-author">Твій дедлайн · Серпень 2026</div>
+        </div>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <div class="sec-title" style="margin-bottom:14px">📋 Чек-лист дня</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Білок 160г — виконано</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Вода 2.5л — випито</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Калорії 1900-2000 ккал — в межах</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Пізній перекус (творог) — з'їдено</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Без алкоголю і солодощів</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent);width:16px;height:16px"> Сон заплановано 7-8 годин</label>
+          </div>
+        </div>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <div class="sec-title" style="margin-bottom:14px">🛒 Список продуктів на тиждень</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--text2)">
+            <div>• Куряче філе — 2 кг</div>
+            <div>• Яйця — 2 десятки</div>
+            <div>• Творог 5% — 1.5 кг</div>
+            <div>• Творог знежирений — 500г</div>
+            <div>• Гречка — 500г</div>
+            <div>• Рис — 500г</div>
+            <div>• Вівсянка — 500г</div>
+            <div>• Макарони тв. сорти — 400г</div>
+            <div>• Картопля — 1 кг</div>
+            <div>• Сир твердий — 200г</div>
+            <div>• Броколі заморожена — 1 кг</div>
+            <div>• Помідори — 6-8 шт</div>
+            <div>• Огірки — 6-8 шт</div>
+            <div>• Морква — 500г</div>
+            <div>• Цибуля — 3-4 шт</div>
+            <div>• Оливкова олія — 1 пляшка</div>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="sec-title" style="margin-bottom:14px">⚡ Прогноз за тижнями</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center">
+              <div style="font-size:12px;font-weight:700;color:var(--text3)">Тиж 1-2</div>
+              <div style="font-size:12px;color:var(--text2)">−1.5-2 кг (вода + початок жироспалення). Тіло адаптується до режиму.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center">
+              <div style="font-size:12px;font-weight:700;color:var(--text3)">Тиж 3-4</div>
+              <div style="font-size:12px;color:var(--text2)">Талія −2-3 см. Сепарація м'язів починає з'являтись. Помітний прогрес.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center">
+              <div style="font-size:12px;font-weight:700;color:var(--text3)">Тиж 5-6</div>
+              <div style="font-size:12px;color:var(--text2)">Прес починає проявлятись. Плечі візуально ширші. Силует V-подібний.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center">
+              <div style="font-size:12px;font-weight:700;color:var(--accent)">Тиж 7-8</div>
+              <div style="font-size:12px;color:var(--text);font-weight:500">Фінальний рельєф. Суха форма. Впевнена оцінка 8/10. Пляж.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1423,13 +1736,49 @@ let pendingPlan = null;
 let unsubscribers = [];
 
 const DEFAULT_PLAN = [
-  {name:"День 1 — Плечі + Спина",tag:"ГАНТЕЛІ",exercises:[{name:"Жим гантелей стоячи",target:"4×8",tempo:"3 сек вниз"},{name:"Розводка в сторони",target:"4×15",tempo:"пауза вгорі"},{name:"Тяга в нахилі",target:"4×10",tempo:"пауза вгорі"},{name:"Тяга до підборіддя",target:"3×12",tempo:"лікті вище"},{name:"Молотки на біцепс",target:"3×10",tempo:"3 сек вниз"}]},
-  {name:"День 2 — Прес + Кор",tag:"ПРЕС",exercises:[{name:"Скручування з паузою",target:"4×15",tempo:"2 сек вгорі"},{name:"Підйом ніг лежачи",target:"4×12",tempo:"контроль спуску"},{name:"Велосипед повільний",target:"3×20",tempo:"відчуй косі"},{name:"Планка",target:"3×45 сек",tempo:"—"},{name:"Вакуум",target:"5×30 сек",tempo:"натще"}]},
-  {name:"День 3 — Груди + Ноги",tag:"ВІДТИСКАННЯ",exercises:[{name:"Відтискання на упорах",target:"4×12",tempo:"пауза 2 сек внизу"},{name:"Розводка гантелей лежачи",target:"3×12",tempo:"повна амплітуда"},{name:"Присідання кубком",target:"4×15",tempo:"коліна назовні"},{name:"Румунська тяга",target:"3×12",tempo:"тягнеться біцепс стегна"}]},
-  {name:"День 4 — Плечі + Біцепс",tag:"ГАНТЕЛІ",exercises:[{name:"Жим гантелей стоячи",target:"4×8",tempo:"3 сек вниз"},{name:"Розводка в сторони",target:"4×15",tempo:"пауза вгорі"},{name:"Молотки на біцепс",target:"3×10",tempo:"3 сек вниз"},{name:"Згинання на біцепс",target:"3×12",tempo:"супінація вгорі"}]},
-  {name:"День 5 — Прес (інтенсив)",tag:"ПРЕС",exercises:[{name:"Скручування з паузою",target:"4×15",tempo:"—"},{name:"Підйом ніг лежачи",target:"4×12",tempo:"—"},{name:"Велосипед повільний",target:"3×20",tempo:"—"},{name:"Бічна планка",target:"3×30 сек/бік",tempo:"косі"},{name:"Планка",target:"3×60 сек",tempo:"—"},{name:"Вакуум",target:"5×30 сек",tempo:"—"}]},
-  {name:"День 6 — Спина + Ноги",tag:"ПОВНИЙ",exercises:[{name:"Тяга в нахилі",target:"4×10",tempo:"пауза вгорі"},{name:"Тяга до підборіддя",target:"3×12",tempo:"—"},{name:"Вузькі відтискання",target:"3×12",tempo:"трицепс"},{name:"Випади на місці",target:"3×10/нога",tempo:"—"},{name:"Присідання кубком",target:"3×15",tempo:"—"}]},
+  {name:"День 1 — Груди + Трицепс",tag:"ВІДТИСКАННЯ",exercises:[
+    {name:"Віджимання на упорах (глибокі)",target:"4×12-15",tempo:"пауза 2 сек внизу"},
+    {name:"Зведення гантелей лежачи (флай)",target:"3×12",tempo:"повна амплітуда"},
+    {name:"Віджимання вузьким хватом",target:"3×10-12",tempo:"лікті вздовж тіла"},
+    {name:"Жим гантелей під кутом (голова на подушці)",target:"3×12",tempo:"3 сек вниз"},
+    {name:"Розгинання рук з еспандером за головою",target:"3×15",tempo:"контроль руху"},
+    {name:"Кистьовий еспандер",target:"3×30 сек",tempo:"—"}
+  ]},
+  {name:"День 2 — Спина + Біцепс",tag:"ГАНТЕЛІ",exercises:[
+    {name:"Тяга гантелей в нахилі (обидві руки)",target:"4×12",tempo:"пауза вгорі"},
+    {name:"Тяга еспандера до пояса стоячи",target:"3×15",tempo:"лопатки разом"},
+    {name:"Тяга еспандера однією рукою",target:"3×12",tempo:"пауза вгорі"},
+    {name:"Підйом гантелей на біцепс стоячи",target:"4×10-12",tempo:"3 сек вниз"},
+    {name:"Молоткові підйоми",target:"3×12",tempo:"супінація вгорі"},
+    {name:"Тяга еспандера до підборіддя",target:"3×15",tempo:"лікті вище плечей"}
+  ]},
+  {name:"День 3 — Плечі + Передпліччя",tag:"ГАНТЕЛІ",exercises:[
+    {name:"Жим гантелей сидячи (армійський)",target:"4×10-12",tempo:"3 сек вниз"},
+    {name:"Розведення гантелей в сторони",target:"3×15",tempo:"пауза вгорі"},
+    {name:"Тяга еспандера перед собою",target:"3×15",tempo:"передній пучок"},
+    {name:"Зворотні розведення в нахилі",target:"3×15",tempo:"задній пучок — пріоритет"},
+    {name:"Шраги з гантелями",target:"3×15",tempo:"пауза вгорі"},
+    {name:"Кистьовий еспандер",target:"4×30 сек",tempo:"—"}
+  ]},
+  {name:"День 4 — Ноги + Кор",tag:"НОГИ/ПРЕС",exercises:[
+    {name:"Присідання з гантелями",target:"4×15",tempo:"коліна назовні"},
+    {name:"Випади з гантелями",target:"3×12 кожна нога",tempo:"рівна спина"},
+    {name:"Румунська тяга з гантелями",target:"4×12",tempo:"тягнеться біцепс стегна"},
+    {name:"Підйом на носки стоячи",target:"3×20",tempo:"пауза вгорі"},
+    {name:"Планка",target:"3×60 сек",tempo:"таз не піднімати"},
+    {name:"Підйом ніг лежачи",target:"3×15",tempo:"контроль спуску"},
+    {name:"Скручування",target:"3×20",tempo:"2 сек вгорі"}
+  ]},
+  {name:"День 5 — Повне тіло (функціональний)",tag:"ПОВНИЙ",exercises:[
+    {name:"Берпі",target:"3×10",tempo:"вибухово вгору"},
+    {name:"Віджимання + тяга гантелі (renegade row)",target:"3×8",tempo:"не кренитись"},
+    {name:"Присідання + жим гантелей",target:"3×12",tempo:"суперсет"},
+    {name:"Тяга еспандера + крок убік",target:"3×12",tempo:"кор стабільний"},
+    {name:"Планка з підйомом руки",target:"3×10 кожна",tempo:"повільно"},
+    {name:"Зворотні розведення (задній пучок)",target:"3×15",tempo:"щодня — пріоритет"}
+  ]},
 ];
+
 
 // ── FIRESTORE HELPERS ──
 function uRef(path) { return doc(db, 'users', currentUser.uid, ...path.split('/')); }
@@ -1438,7 +1787,7 @@ function uCol(path) { return collection(db, 'users', currentUser.uid, path); }
 async function loadUserData() {
   setSyncStatus('Завантаження...');
   const pSnap = await getDoc(uRef('profile/data'));
-  userProfile = pSnap.exists() ? pSnap.data() : { startDate: new Date().toISOString().slice(0,10), deadline:'', goal:'', equip:'' };
+  userProfile = pSnap.exists() ? pSnap.data() : { startDate: new Date().toISOString().slice(0,10), deadline:'2026-08-25', goal:'Рельєф 8/10 — прес + плечі + сепарація', equip:'Гантелі 2×13кг, упори, еспандер', name:'Міхал', age:'37' };
 
   const wUnsub = onSnapshot(query(uCol('weights'), orderBy('date')), snap => {
     userWeights = snap.docs.map(d => ({id:d.id, ...d.data()}));
@@ -1680,6 +2029,7 @@ window.showPage=p=>{
   if(p==='measurements')renderMeasurements();
   if(p==='weight'){renderWeightTable();setTimeout(()=>drawChart('weightChart2',userWeights,true),50);}
   if(p==='history')renderHistory();
+  if(p==='nutrition'){renderMealDay();}
   if(p==='ai'){
     const hasKey=!!(localStorage.getItem('bl_apikey'));
     document.getElementById('aiOnboarding').style.display=hasKey?'none':'block';
@@ -1725,6 +2075,7 @@ function updateDeadline(){
     document.getElementById('dashProgressBar').style.background=pct>=80?'#22c55e':pct>=50?'#f97316':'#ef4444';
     document.getElementById('dashProgressSub').textContent=`${done} з ${expected} за 2 тижні`;
   }
+  renderMotivBanner();
 }
 
 // ── DASHBOARD ──
@@ -1999,7 +2350,7 @@ function buildCtx(){
   const scheduleLines=[];
   for(let i=0;i<14;i++){const d=new Date(todayStr+'T12:00:00');d.setDate(d.getDate()+i);const ds=d.toISOString().slice(0,10);const st=wcGetDayStatus(ds);const planDay=plan[st.planDayIdx];scheduleLines.push(`${ds}: ${st.type}${planDay?' ('+planDay.name+', індекс '+st.planDayIdx+')':''}`);}
   const scheduleCtx=scheduleLines.join('\n');
-  return`Ти персональний тренер. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'—'}, Вік: ${p.age||36}\n- Ціль: ${p.goal||'трансформація'} — залишилось ${daysLeft} днів\n- Інвентар: ${p.equip||'гантелі, упори'}\n\nПЛАН:\n${planSummary}\n\nРОЗКЛАД (наступні 14 днів):\n${scheduleCtx}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план тренувань — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.\n\nЯКЩО пропонуєш змінити розклад у календарі (перенести, скасувати, поставити вихідний) — додай JSON у тегах <schedule>[...]</schedule>. Кожен елемент масиву: {"date":"YYYY-MM-DD","type":"planned"|"rest"|"missed"|"done-quick","planDayIdx":N_або_null}. Якщо розклад не змінюється — НЕ додавай <schedule>.`;
+  return`Ти персональний тренер і нутриціолог. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'Міхал'}, Вік: ${p.age||37}, Зріст: 174 см\n- Поточна вага: ~71 кг, Ціль: ${p.goal||'рельєф 8/10 — прес + плечі'} — залишилось ${daysLeft} днів (дедлайн: 25 серпня 2026)\n- Інвентар: ${p.equip||'гантелі 2×13кг, упори, еспандер стрічковий, кистьовий еспандер'}\n- Заміри: біцепс 37см, талія 81см, груди 100см, стегно 53см\n- Поточна оцінка форми: 7/10. Ціль: 8+/10 до серпня 2026\n\nПЛАН ТРЕНУВАНЬ (5 днів/тиждень):\n${planSummary}\n\nХАРЧУВАННЯ (план реокомпозиції):\n- Калорії: 1900-2000 ккал/день\n- Білок: 160г+ ОБОВ'ЯЗКОВО\n- Продукти: куряче філе, яйця, творог, гречка, рис, вівсянка, макарони тв.сорти, овочі, сир, картопля, млинці (субота)\n- Без риби, алкоголю, цукру, борошняного\n\nРОЗКЛАД (наступні 14 днів):\n${scheduleCtx}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план тренувань — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.\n\nЯКЩО пропонуєш змінити розклад у календарі — додай JSON у тегах <schedule>[...]</schedule>. Кожен елемент масиву: {"date":"YYYY-MM-DD","type":"planned"|"rest"|"missed"|"done-quick","planDayIdx":N_або_null}. Якщо розклад не змінюється — НЕ додавай <schedule>.`;
 }
 
 window.sendMessage=async()=>{
@@ -2670,6 +3021,151 @@ function showInlineConfirm(msg){
     document.getElementById('icNo').onclick=()=>cleanup(false);
   });
 }
+
+// ── MOTIVATION BANNER ──
+const MOTIV_QUOTES = [
+  "Твоє тіло може все. Твій розум потрібно переконати першим.",
+  "8/10 — це не генетика. Це 8 тижнів чесної роботи.",
+  "Кожне тренування — крок між 7 і 8.",
+  "Дисципліна важить більше за мотивацію.",
+  "Ти вже краще 80% чоловіків свого віку. Стань кращим за 95%.",
+  "Прес є у всіх. Питання — скільки жиру його ховає.",
+  "Не пропускай. Одне пропущене тренування стає двома.",
+  "Їж білок. Спи 8 годин. Тренуйся. Повторюй."
+];
+function renderMotivBanner() {
+  const p = userProfile;
+  const deadline = p.deadline || '2026-08-25';
+  const start = new Date((p.startDate || new Date().toISOString().slice(0,10)) + 'T12:00:00');
+  const end = new Date(deadline + 'T12:00:00');
+  const now = new Date();
+  const totalDays = Math.max(1, Math.round((end - start) / 86400000));
+  const daysPassed = Math.max(0, Math.round((now - start) / 86400000));
+  const daysLeft = Math.max(0, Math.round((end - now) / 86400000));
+  const q = MOTIV_QUOTES[Math.floor(daysPassed / 3) % MOTIV_QUOTES.length];
+  const qEl = document.getElementById('motivQuote');
+  const dlEl = document.getElementById('motivDeadlineLabel');
+  const dlDays = document.getElementById('motivDaysLeft');
+  const row = document.getElementById('motivDaysRow');
+  if (qEl) qEl.textContent = '"' + q + '"';
+  if (dlEl) dlEl.textContent = deadline;
+  if (dlDays) dlDays.textContent = daysLeft;
+  if (row) {
+    const dots = Math.min(totalDays, 56);
+    const passedDots = Math.min(daysPassed, dots);
+    row.innerHTML = Array.from({length: dots}, (_, i) => {
+      let cls = 'motiv-day-dot';
+      if (i < passedDots) cls += ' done';
+      else if (i === passedDots) cls += ' today';
+      return `<div class="${cls}"></div>`;
+    }).join('');
+  }
+}
+
+// ── NUTRITION PAGE JS ──
+const MEAL_PLAN = [
+  { day:'Понеділок', kcal:1960, protein:163, carbs:195, fat:52, tip:'День після вихідних — суворо за планом. Не пропускай сніданок.',
+    meals:[
+      {name:'Сніданок',time:'8:00',items:['Вівсянка 80г (суха)','3 яйця варених','Сир твердий 20г'],kcal:490,p:35,c:52,f:16},
+      {name:'Обід',time:'13:00',items:['Куряче філе 220г (гриль)','Гречка 80г (суха)','Огірок + помідор'],kcal:510,p:52,c:56,f:7},
+      {name:'Перекус',time:'16:30',items:['Творог 200г (5%)','1 яйце варене'],kcal:270,p:34,c:6,f:10},
+      {name:'Вечеря',time:'19:30',items:['Куряче філе 180г','Тушковані овочі 200г','1 ч.л. оливкової олії'],kcal:380,p:42,c:14,f:9},
+      {name:'Пізній перекус',time:'21:30',items:['Творог знежирений 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'Вівторок', kcal:1940, protein:158, carbs:200, fat:50, tip:'Тренування — спина і біцепс. Обід за 1.5 год до тренування.',
+    meals:[
+      {name:'Сніданок',time:'8:00',items:['3 яйця (варені або без олії)','Рис 70г (сухий)','Овочі свіжі'],kcal:480,p:30,c:54,f:12},
+      {name:'Обід',time:'13:00',items:['Куряче філе 200г','Макарони тверді 80г','Помідор + зелень'],kcal:530,p:48,c:62,f:8},
+      {name:'Перекус',time:'16:30',items:['Творог 200г','Сир твердий 15г'],kcal:260,p:33,c:5,f:11},
+      {name:'Вечеря',time:'19:30',items:['Куряче філе 180г','Капуста тушкована 200г'],kcal:350,p:40,c:12,f:8},
+      {name:'Пізній перекус',time:'21:30',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'Середа', kcal:1980, protein:160, carbs:205, fat:53, tip:'Середина тижня — перевір чи п\'єш 2.5л води. Критично для рельєфу.',
+    meals:[
+      {name:'Сніданок',time:'8:00',items:['Вівсянка 80г','2 яйця','Творог 100г'],kcal:500,p:36,c:54,f:14},
+      {name:'Обід',time:'13:00',items:['Куряче філе 220г','Картопля варена 200г','Овочі'],kcal:520,p:48,c:58,f:8},
+      {name:'Перекус',time:'16:30',items:['Творог 200г','1 яйце'],kcal:270,p:34,c:6,f:10},
+      {name:'Вечеря',time:'19:30',items:['Куряче філе 180г','Овочі на пару 200г'],kcal:360,p:41,c:10,f:9},
+      {name:'Пізній перекус',time:'21:30',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'Четвер', kcal:1950, protein:162, carbs:193, fat:51, tip:'День ніг і кору. Їж вуглеводи до тренування — більше енергії.',
+    meals:[
+      {name:'Сніданок',time:'8:00',items:['3 яйця','Гречка 70г','Сир 20г'],kcal:490,p:34,c:50,f:15},
+      {name:'Обід',time:'13:00',items:['Куряче філе 220г','Рис 80г','Овочі'],kcal:520,p:50,c:57,f:8},
+      {name:'Перекус',time:'16:30',items:['Творог 200г','1 яйце'],kcal:270,p:34,c:6,f:10},
+      {name:'Вечеря',time:'19:30',items:['Куряче філе 180г','Тушковані овочі 200г'],kcal:360,p:41,c:11,f:8},
+      {name:'Пізній перекус',time:'21:30',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'П\'ятниця', kcal:1970, protein:161, carbs:200, fat:52, tip:'Кінець тижня — не розслаблятись. П\'ятниця вирішує вихідні.',
+    meals:[
+      {name:'Сніданок',time:'8:00',items:['Вівсянка 80г','3 яйця','Творог 100г'],kcal:530,p:38,c:56,f:15},
+      {name:'Обід',time:'13:00',items:['Куряче філе 200г','Макарони тверді 80г','Помідор'],kcal:510,p:46,c:60,f:8},
+      {name:'Перекус',time:'16:30',items:['Творог 200г','Сир 15г'],kcal:260,p:33,c:5,f:11},
+      {name:'Вечеря',time:'19:30',items:['Куряче філе 180г','Овочі свіжі 200г'],kcal:360,p:41,c:11,f:8},
+      {name:'Пізній перекус',time:'21:30',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'Субота', kcal:2050, protein:155, carbs:215, fat:55, tip:'Дозволено млинці на сніданок — без цукру, з творогом. Решта дня за планом.',
+    meals:[
+      {name:'Сніданок',time:'9:00',items:['Млинці 3 шт (на яйцях без цукру)','Творог 150г як начинка','Ягоди або банан'],kcal:560,p:32,c:68,f:16},
+      {name:'Обід',time:'13:30',items:['Куряче філе 220г','Картопля варена 200г','Салат овочевий'],kcal:540,p:50,c:58,f:9},
+      {name:'Перекус',time:'17:00',items:['Творог 200г','1 яйце'],kcal:270,p:34,c:6,f:10},
+      {name:'Вечеря',time:'20:00',items:['Куряче філе 180г','Овочі гриль або свіжі'],kcal:370,p:41,c:12,f:10},
+      {name:'Пізній перекус',time:'22:00',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+  { day:'Неділя', kcal:1920, protein:158, carbs:190, fat:50, tip:'Легший день. Підготуй продукти на понеділок заздалегідь.',
+    meals:[
+      {name:'Сніданок',time:'9:00',items:['3 яйця + 2 білки','Вівсянка 60г','Творог 100г'],kcal:490,p:38,c:48,f:14},
+      {name:'Обід',time:'13:30',items:['Куряче філе 220г','Гречка 80г','Овочі'],kcal:510,p:50,c:56,f:8},
+      {name:'Перекус',time:'17:00',items:['Творог 200г','Сир 20г'],kcal:280,p:35,c:6,f:12},
+      {name:'Вечеря',time:'20:00',items:['Куряче філе 160г','Тушковані овочі 200г'],kcal:340,p:38,c:12,f:8},
+      {name:'Пізній перекус',time:'22:00',items:['Творог 100г'],kcal:90,p:17,c:4,f:1}
+    ]},
+];
+
+let currentMealDay = 0;
+window.switchMealDay = (idx, btn) => {
+  currentMealDay = idx;
+  document.querySelectorAll('.meal-day-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderMealDay();
+};
+function renderMealDay() {
+  const d = MEAL_PLAN[currentMealDay];
+  if (!d) return;
+  const el = document.getElementById('mealDayContent');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="day-macro-bar">
+      <div class="d-macro-card"><div class="d-macro-val">${d.kcal}</div><div class="d-macro-label">ккал</div></div>
+      <div class="d-macro-card"><div class="d-macro-val" style="color:var(--accent)">${d.protein}г</div><div class="d-macro-label">білок</div></div>
+      <div class="d-macro-card"><div class="d-macro-val" style="color:var(--text2)">${d.carbs}г / ${d.fat}г</div><div class="d-macro-label">вугл / жири</div></div>
+    </div>
+    ${d.meals.map(m => `
+      <div class="meal-card">
+        <div class="meal-card-head">
+          <div class="meal-name">${m.name}</div>
+          <span class="meal-time">${m.time} · ${m.kcal} ккал</span>
+        </div>
+        <div class="meal-items">${m.items.map(i => '· ' + i).join('<br>')}</div>
+        <div class="meal-macros">
+          <div class="m-macro">Б <span>${m.p}г</span></div>
+          <div class="m-macro">В <span>${m.c}г</span></div>
+          <div class="m-macro">Ж <span>${m.f}г</span></div>
+        </div>
+      </div>`).join('')}
+    <div style="background:var(--accent-light);border:1.5px solid var(--accent-mid);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:#92400e;margin-top:4px">
+      💡 ${d.tip}
+    </div>`;
+}
+
+window.switchNutrTab = (tab, btn) => {
+  document.querySelectorAll('.nutr-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nutr-section').forEach(s => s.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const el = document.getElementById('nutr-' + tab);
+  if (el) el.classList.add('active');
+  if (tab === 'menu') renderMealDay();
+};
 
 // ── TOAST ──
 window.showToast=(msg,err=false)=>{const t=document.getElementById('toast');t.textContent=msg;t.style.background=err?'#ef4444':'#111';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);};
