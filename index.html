@@ -1890,7 +1890,26 @@ onAuthStateChanged(auth, async user => {
 });
 
 // ── PROFILE ──
-function getPlan() { return (userProfile.plan && userProfile.plan.length) ? userProfile.plan : JSON.parse(JSON.stringify(DEFAULT_PLAN)); }
+function getPlan() {
+  const fallback = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  if (!userProfile.plan || !userProfile.plan.length) return fallback;
+  // Sanitize: if any day has missing/undefined exercise names, merge with DEFAULT_PLAN
+  return userProfile.plan.map((day, di) => {
+    const defDay = fallback[di] || fallback[0];
+    const exercises = (day.exercises && day.exercises.length)
+      ? day.exercises.map((ex, ei) => ({
+          name:   (ex && ex.name)   ? ex.name   : (defDay.exercises[ei] ? defDay.exercises[ei].name   : ''),
+          target: (ex && ex.target) ? ex.target : (defDay.exercises[ei] ? defDay.exercises[ei].target : ''),
+          tempo:  (ex && ex.tempo)  ? ex.tempo  : (defDay.exercises[ei] ? defDay.exercises[ei].tempo  : ''),
+        }))
+      : defDay.exercises;
+    return {
+      name: day.name || defDay.name,
+      tag:  day.tag  || defDay.tag,
+      exercises,
+    };
+  });
+}
 
 let _profileDirty=false;
 window.openProfile = () => {
