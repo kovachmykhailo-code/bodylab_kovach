@@ -2618,6 +2618,8 @@ function renderWeekCalendar() {
           statusLabel = `<div class="wc-card-status" style="color:${ti.color}">Сьогодні</div>`;
         }
 
+        const dayNumMatch = day.name.match(/День (\d+)/);
+        const dayNumLabel = dayNumMatch ? `День ${dayNumMatch[1]}` : (day.tag || '');
         const shortName = day.name.replace(/День \d+ — /,'').replace(/День \d+/,'').trim() || day.name;
 
         cardHTML = `<div class="wc-card ${typeClass}" draggable="true"
@@ -2629,7 +2631,7 @@ function renderWeekCalendar() {
           ondragleave="wcDragLeave(event)">
           <div class="wc-card-dot" style="background:${dotColor}"></div>
           <div class="wc-card-name">${shortName}</div>
-          <div class="wc-card-tag">${day.tag || ''}</div>
+          <div class="wc-card-tag">${dayNumLabel}</div>
           ${statusLabel}
           ${progressHTML}
           <button class="wc-card-actions" onclick="event.stopPropagation();wcOpenCtx(event,'${dateStr}',${planIdx})">⋯</button>
