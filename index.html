@@ -1779,6 +1779,49 @@ const DEFAULT_PLAN = [
   ]},
 ];
 
+const PERSONAL_DEFAULT_PLAN = [
+  {name:"День 1 — Push: груди, плечі, трицепс",tag:"PUSH",exercises:[
+    {name:"Відтискання на опорах",target:"4×макс-2",tempo:"контроль, не провалюй плечі"},
+    {name:"Жим гантелей лежачи на підлозі",target:"4×10-15",tempo:"3 сек вниз, пауза 1 сек"},
+    {name:"Жим гантелей стоячи або сидячи",target:"4×8-12",tempo:"без прогину в попереку"},
+    {name:"Розведення гантелей в сторони",target:"3×12-20",tempo:"пауза вгорі 1 сек"},
+    {name:"Французький жим гантелі",target:"3×12-15",tempo:"лікті стабільно"},
+    {name:"Планка",target:"3×45-60 сек",tempo:"таз не піднімати"}
+  ]},
+  {name:"День 2 — Pull: спина, біцепс, передпліччя",tag:"PULL",exercises:[
+    {name:"Тяга двох гантелей в нахилі",target:"4×10-15",tempo:"лопатки разом у верхній точці"},
+    {name:"Тяга однієї гантелі до поясу",target:"4×12 кожна рука",tempo:"пауза вгорі 1 сек"},
+    {name:"Зворотні розведення в нахилі",target:"3×15-20",tempo:"задня дельта, без ривків"},
+    {name:"Підйом гантелей на біцепс",target:"4×10-15",tempo:"лікті біля корпусу"},
+    {name:"Молоткові підйоми",target:"3×12",tempo:"контроль вниз"},
+    {name:"Еспандер для кисті",target:"4×25-40",tempo:"повна амплітуда"}
+  ]},
+  {name:"День 3 — Legs + Core: ноги, сідниці, прес",tag:"LEGS/CORE",exercises:[
+    {name:"Гоблет-присідання з гантеллю",target:"4×15-20",tempo:"3 сек вниз, коліна назовні"},
+    {name:"Болгарські випади",target:"4×10-12 кожна нога",tempo:"контроль рівноваги"},
+    {name:"Румунська тяга з гантелями",target:"4×12-15",tempo:"тягнеться біцепс стегна"},
+    {name:"Випади назад",target:"3×12 кожна нога",tempo:"рівна спина"},
+    {name:"Підйоми на носки стоячи",target:"4×20-30",tempo:"пауза вгорі 1 сек"},
+    {name:"Підйоми ніг лежачи або скручування",target:"4×15-20",tempo:"без ривків"}
+  ]},
+  {name:"День 4 — Upper: плечі, груди, спина",tag:"UPPER",exercises:[
+    {name:"Відтискання на опорах з паузою",target:"4×8-15",tempo:"пауза 1 сек внизу"},
+    {name:"Тяга гантелей в нахилі",target:"4×12",tempo:"пауза вгорі"},
+    {name:"Жим гантелей над головою",target:"3×10-12",tempo:"контроль корпусу"},
+    {name:"Розведення гантелей в сторони",target:"4×15-20",tempo:"повільно вниз"},
+    {name:"Зворотні розведення",target:"3×15-20",tempo:"задня дельта"},
+    {name:"Біцепс + трицепс суперсет",target:"3×12-15",tempo:"без довгих пауз між вправами"}
+  ]},
+  {name:"День 5 — Full Body + Conditioning",tag:"FULL BODY",exercises:[
+    {name:"Присідання + жим гантелей",target:"4×12",tempo:"єдиний контрольований рух"},
+    {name:"Берпі без стрибка або з легким стрибком",target:"3×10",tempo:"рівне дихання"},
+    {name:"Renegade row з гантелями",target:"3×8 кожна рука",tempo:"таз не розгойдувати"},
+    {name:"Румунська тяга",target:"3×15",tempo:"повільна негативна фаза"},
+    {name:"Відтискання",target:"3×макс-2",tempo:"залишай 2 повтори в запасі"},
+    {name:"Бокова планка",target:"3×30-45 сек кожна сторона",tempo:"корпус рівний"}
+  ]}
+];
+
 
 // ── FIRESTORE HELPERS ──
 function uRef(path) { return doc(db, 'users', currentUser.uid, ...path.split('/')); }
@@ -1891,8 +1934,8 @@ onAuthStateChanged(auth, async user => {
 
 // ── PROFILE ──
 function getPlan() {
-  const fallback = JSON.parse(JSON.stringify(DEFAULT_PLAN));
-  if (!userProfile.plan || !userProfile.plan.length) return fallback;
+  const fallback = JSON.parse(JSON.stringify(PERSONAL_DEFAULT_PLAN));
+  if (!userProfile.plan || !userProfile.plan.length || isLegacyPlan(userProfile.plan)) return fallback;
   // Sanitize: if any day has missing/undefined exercise names, merge with DEFAULT_PLAN
   return userProfile.plan.map((day, di) => {
     const defDay = fallback[di] || fallback[0];
@@ -1909,6 +1952,11 @@ function getPlan() {
       exercises,
     };
   });
+}
+
+function isLegacyPlan(plan) {
+  const names = (plan || []).map(day => `${day?.name || ''} ${day?.tag || ''}`).join(' ').toLowerCase();
+  return /відтискання|гантелі|відтиск/.test(names) && !/push|pull|upper|full body|conditioning/.test(names);
 }
 
 const DEFAULT_WEEK_TEMPLATE = [0, 1, null, 2, 3, 4, null]; // Mon..Sun, null = rest day
