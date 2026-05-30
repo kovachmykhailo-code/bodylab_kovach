@@ -1911,6 +1911,36 @@ function getPlan() {
   });
 }
 
+const DEFAULT_WEEK_TEMPLATE = [0, 1, null, 2, 3, 4, null]; // Mon..Sun, null = rest day
+const LEG_EXERCISE_RX = /прис[іи]д|випад|румун|нога|ноги|стегн|ікр|носок|носки|гоблет|тяга|міст|step|squat|lunge|leg|calf/i;
+const PUSH_EXERCISE_RX = /віджим|жим|груд|трицепс|розгин|press|push/i;
+const PULL_EXERCISE_RX = /тяга|спин|біцепс|підйом|row|pull|curl/i;
+
+function validateTrainingPlan(plan) {
+  const warnings = [];
+  if (!Array.isArray(plan) || plan.length < 3) warnings.push('План має містити щонайменше 3 тренувальні дні.');
+  if (Array.isArray(plan) && plan.length > DEFAULT_WEEK_TEMPLATE.filter(i => i !== null).length) {
+    warnings.push('У тижневому шаблоні передбачено максимум 5 тренувань і 2 дні відпочинку.');
+  }
+  (plan || []).forEach((day, i) => {
+    const title = `${day?.name || ''} ${day?.tag || ''}`.toLowerCase();
+    const exerciseText = (day?.exercises || []).map(ex => `${ex.name || ''} ${ex.target || ''}`).join(' ').toLowerCase();
+    if (!(day?.exercises || []).some(ex => (ex.name || '').trim())) warnings.push(`День ${i + 1}: додай хоча б одну вправу.`);
+    if (/ног|стегн|legs|leg/i.test(title) && !LEG_EXERCISE_RX.test(exerciseText)) warnings.push(`День ${i + 1}: у назві є ноги, але немає вправ на ноги.`);
+    if (/груд|трицепс|push|відтиск|віджим/i.test(title) && !PUSH_EXERCISE_RX.test(exerciseText)) warnings.push(`День ${i + 1}: назва push/груди не відповідає вправам.`);
+    if (/спин|біцепс|pull/i.test(title) && !PULL_EXERCISE_RX.test(exerciseText)) warnings.push(`День ${i + 1}: назва pull/спина не відповідає вправам.`);
+  });
+  return warnings;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function renderSafeLines(value) {
+  return escapeHtml(value).replace(/\n/g, '<br>');
+}
+
 let _profileDirty=false;
 window.openProfile = () => {
   const p = userProfile;
@@ -1941,6 +1971,13 @@ window.closeProfile = () => {
 
 window.saveProfile = async () => {
   setSyncStatus('Збереження...');
+  const plan = readPlanFromEditor();
+  const planWarnings = validateTrainingPlan(plan);
+  if (planWarnings.length) {
+    setSyncStatus('');
+    showToast(planWarnings[0], true);
+    return;
+  }
   const updated = {
     ...userProfile,
     name:      document.getElementById('profName').value.trim(),
@@ -1949,7 +1986,7 @@ window.saveProfile = async () => {
     equip:     document.getElementById('profEquip').value.trim(),
     startDate: document.getElementById('profStart').value,
     deadline:  document.getElementById('profDeadline').value,
-    plan:      readPlanFromEditor(),
+    plan,
   };
   const apiVal = document.getElementById('profApiKey').value.trim();
   if (apiVal) localStorage.setItem('bl_apikey', apiVal);
@@ -2029,14 +2066,14 @@ function readPlanFromEditor(){const days=document.querySelectorAll('[id^="planDa
 function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 
 // ── NAVIGATION ──
-const PAGE_TITLES={dashboard:'Огляд',workout:'Тренування',measurements:'Заміри тіла',weight:'Журнал ваги',history:'Журнал тренувань',ai:'AI Тренер'};
+const PAGE_TITLES={dashboard:'Огляд',workout:'Тренування',measurements:'Заміри тіла',weight:'Журнал ваги',history:'Журнал тренувань',nutrition:'Харчування',ai:'AI Тренер'};
 window.showPage=p=>{
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-btn').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('topbarTitle').textContent=PAGE_TITLES[p]||'';
-  const map=['dashboard','workout','measurements','weight','history','ai'];
+  const map=['dashboard','workout','measurements','weight','history','nutrition','ai'];
   const idx=map.indexOf(p);if(idx>=0)document.querySelectorAll('.nav-btn')[idx].classList.add('active');
   document.querySelectorAll('.mobile-nav-btn[data-page="'+p+'"]').forEach(x=>x.classList.add('active'));
   window.scrollTo({top:0,behavior:'smooth'});
@@ -2174,8 +2211,19 @@ function drawChart(id,weights,compact){
 // ── MEASUREMENTS ──
 window.saveMeasurement=async()=>{
   const date=document.getElementById('measDate').value;if(!date){showToast('Вкажи дату',true);return;}
+  const measurement = {
+    date,
+    neck:parseFloat(document.getElementById('measNeck').value)||null,
+    chest:parseFloat(document.getElementById('measChest').value)||null,
+    waist:parseFloat(document.getElementById('measWaist').value)||null,
+    hips:parseFloat(document.getElementById('measHips').value)||null,
+    bicep:parseFloat(document.getElementById('measBicep').value)||null,
+    thigh:parseFloat(document.getElementById('measThigh').value)||null,
+    fat:parseFloat(document.getElementById('measFat').value)||null
+  };
+  if (!Object.entries(measurement).some(([key,val]) => key !== 'date' && val > 0)) { showToast('Додай хоча б один замір', true); return; }
   setSyncStatus('Збереження...');
-  await addDoc(uCol('measurements'),{date,neck:parseFloat(document.getElementById('measNeck').value)||null,chest:parseFloat(document.getElementById('measChest').value)||null,waist:parseFloat(document.getElementById('measWaist').value)||null,hips:parseFloat(document.getElementById('measHips').value)||null,bicep:parseFloat(document.getElementById('measBicep').value)||null,thigh:parseFloat(document.getElementById('measThigh').value)||null,fat:parseFloat(document.getElementById('measFat').value)||null});
+  await addDoc(uCol('measurements'),measurement);
   ['measNeck','measChest','measWaist','measHips','measBicep','measThigh','measFat'].forEach(id=>document.getElementById(id).value='');
   setSyncStatus('');showToast('Замір збережено');
 };
@@ -2281,7 +2329,7 @@ window.delMeas=async id=>{
 // ── WEIGHT ──
 window.saveWeight=async()=>{
   const date=document.getElementById('weightDate').value,val=parseFloat(document.getElementById('weightVal').value);
-  if(!date||!val){showToast('Заповни дату та вагу',true);return;}
+  if(!date||!Number.isFinite(val)||val<=0){showToast('Заповни дату та коректну вагу',true);return;}
   const existing=userWeights.find(w=>w.date===date);
   if(existing){
     const confirmed=await showInlineConfirm(`За ${date} вже є запис (${existing.value} кг). Додати ще один?`);
@@ -2296,7 +2344,7 @@ function renderWeightTable(){
   const sorted=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const tb=document.getElementById('weightBody');
   if(!sorted.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:28px">Немає записів</td></tr>';return;}
-  tb.innerHTML=sorted.map((w,i)=>{const prev=sorted[i+1];const delta=prev?(w.value-prev.value).toFixed(1):null;const dHtml=delta?`<span class="${delta<0?'d-pos':delta>0?'d-neg':'d-neu'}" style="font-weight:600">${delta>0?'+':''}${delta}</span>`:'—';return`<tr><td style="color:var(--text3);font-size:12px;font-family:'Geist Mono',monospace">${w.date}</td><td style="font-weight:500;font-family:'Geist Mono',monospace">${w.value} кг</td><td>${dHtml}</td><td style="color:var(--text2);font-size:12px">${w.note||'—'}</td><td><button class="del-btn" onclick="delWeight('${w.id}')">×</button></td></tr>`;}).join('');
+  tb.innerHTML=sorted.map((w,i)=>{const prev=sorted[i+1];const delta=prev?(w.value-prev.value).toFixed(1):null;const dHtml=delta?`<span class="${delta<0?'d-pos':delta>0?'d-neg':'d-neu'}" style="font-weight:600">${delta>0?'+':''}${delta}</span>`:'—';return`<tr><td style="color:var(--text3);font-size:12px;font-family:'Geist Mono',monospace">${escapeHtml(w.date)}</td><td style="font-weight:500;font-family:'Geist Mono',monospace">${escapeHtml(w.value)} кг</td><td>${dHtml}</td><td style="color:var(--text2);font-size:12px">${escapeHtml(w.note||'—')}</td><td><button class="del-btn" onclick="delWeight('${escapeHtml(w.id)}')">×</button></td></tr>`;}).join('');
 }
 window.delWeight=async id=>{
   const w=userWeights.find(x=>x.id===id);
@@ -2357,19 +2405,54 @@ window.saveEditLog=async()=>{
 
 // ── AI ──
 function buildCtx(){
-  const p=userProfile;
+  const p=userProfile || {};
+  const latestWeight=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const latestMeas=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date))[0] || {};
   const deadlineStr=p.deadline||'не вказано';
-  const daysLeft=p.deadline?Math.ceil((new Date(p.deadline)-new Date())/(1000*60*60*24)):'?';
-  const wL=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  const mL=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,2);
-  const lL=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,7);
-  const plan=getPlan();const planSummary=plan.map((day,i)=>`День ${i+1} (${day.name}): ${day.exercises.map(e=>e.name).join(', ')}`).join('\n');
-  // Build current schedule context (next 14 days)
+  const daysLeft=p.deadline?Math.ceil((new Date(p.deadline+'T12:00:00')-new Date())/(1000*60*60*24)):'?';
+  const wL=[...userWeights].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  const mL=[...userMeasurements].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,4);
+  const lL=[...userLogs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  const plan=getPlan();
+  const planSummary=plan.map((day,i)=>`День ${i+1} (${day.name}; ${day.tag||'без тегу'}): ${day.exercises.map(e=>`${e.name} (${e.target||'без цілі'})`).join(', ')}`).join('\n');
   const todayStr=new Date().toISOString().slice(0,10);
   const scheduleLines=[];
-  for(let i=0;i<14;i++){const d=new Date(todayStr+'T12:00:00');d.setDate(d.getDate()+i);const ds=d.toISOString().slice(0,10);const st=wcGetDayStatus(ds);const planDay=plan[st.planDayIdx];scheduleLines.push(`${ds}: ${st.type}${planDay?' ('+planDay.name+', індекс '+st.planDayIdx+')':''}`);}
+  for(let i=0;i<14;i++){
+    const d=new Date(todayStr+'T12:00:00');
+    d.setDate(d.getDate()+i);
+    const ds=d.toISOString().slice(0,10);
+    const st=wcGetDayStatus(ds);
+    const planDay=plan[st.planDayIdx];
+    scheduleLines.push(`${ds}: ${st.type}${planDay?' ('+planDay.name+', індекс '+st.planDayIdx+')':''}`);
+  }
   const scheduleCtx=scheduleLines.join('\n');
-  return`Ти персональний тренер і нутриціолог. Відповідай ТІЛЬКИ українською. Тон: прямий, чесний. Тільки конкретні факти і рекомендації.\n\nПРОФІЛЬ:\n- Ім'я: ${p.name||'Міхал'}, Вік: ${p.age||37}, Зріст: 174 см\n- Поточна вага: ~71 кг, Ціль: ${p.goal||'рельєф 8/10 — прес + плечі'} — залишилось ${daysLeft} днів (дедлайн: 25 серпня 2026)\n- Інвентар: ${p.equip||'гантелі 2×13кг, упори, еспандер стрічковий, кистьовий еспандер'}\n- Заміри: біцепс 37см, талія 81см, груди 100см, стегно 53см\n- Поточна оцінка форми: 7/10. Ціль: 8+/10 до серпня 2026\n\nПЛАН ТРЕНУВАНЬ (5 днів/тиждень):\n${planSummary}\n\nХАРЧУВАННЯ (план реокомпозиції):\n- Калорії: 1900-2000 ккал/день\n- Білок: 160г+ ОБОВ'ЯЗКОВО\n- Продукти: куряче філе, яйця, творог, гречка, рис, вівсянка, макарони тв.сорти, овочі, сир, картопля, млинці (субота)\n- Без риби, алкоголю, цукру, борошняного\n\nРОЗКЛАД (наступні 14 днів):\n${scheduleCtx}\n\nВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}\nЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}`).join(' | ')||'немає'}\nТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date}(${dn}/${l.exercises.length})`;}).join(', ')||'немає'}\n\nЯКЩО пропонуєш змінити план тренувань — додай в кінці JSON у тегах <plan>[...]</plan>. Якщо план не змінюється — НЕ додавай <plan>.\n\nЯКЩО пропонуєш змінити розклад у календарі — додай JSON у тегах <schedule>[...]</schedule>. Кожен елемент масиву: {"date":"YYYY-MM-DD","type":"planned"|"rest"|"missed"|"done-quick","planDayIdx":N_або_null}. Якщо розклад не змінюється — НЕ додавай <schedule>.`;
+  const warnings=validateTrainingPlan(plan);
+  return`Ти персональний тренер і нутриціолог. Відповідай тільки українською. Тон: прямий, чесний, практичний.
+
+ПРОФІЛЬ:
+- Ім'я: ${p.name||'не вказано'}, вік: ${p.age||'не вказано'}
+- Ціль: ${p.goal||'не вказано'}
+- Дедлайн: ${deadlineStr}, залишилось днів: ${daysLeft}
+- Інвентар: ${p.equip||'не вказано'}
+- Поточна вага: ${latestWeight?latestWeight.value+' кг ('+latestWeight.date+')':'немає даних'}
+- Останні заміри: талія=${latestMeas.waist||'?'}, груди=${latestMeas.chest||'?'}, біцепс=${latestMeas.bicep||'?'}, стегно=${latestMeas.thigh||'?'}, жир=${latestMeas.fat||'?'}
+
+ПЛАН ТРЕНУВАНЬ:
+${planSummary}
+
+ПОПЕРЕДЖЕННЯ ВАЛІДАТОРА ПЛАНУ:
+${warnings.join('\n')||'немає'}
+
+РОЗКЛАД НА НАСТУПНІ 14 ДНІВ:
+${scheduleCtx}
+
+ВАГА: ${wL.map(w=>`${w.date}: ${w.value}кг`).join(', ')||'немає'}
+ЗАМІРИ: ${mL.map(m=>`${m.date}: талія=${m.waist||'?'}, груди=${m.chest||'?'}, біцепс=${m.bicep||'?'}, стегно=${m.thigh||'?'}`).join(' | ')||'немає'}
+ТРЕНУВАННЯ: ${lL.map(l=>{const dn=l.exercises.filter(e=>e.done).length;return`${l.date} ${l.dayName} (${dn}/${l.exercises.length})`;}).join(', ')||'немає'}
+
+Якщо пропонуєш змінити план тренувань, він має мати реальний баланс груп м'язів і не суперечити назвам днів. Додай JSON у тегах <plan>[...]</plan>. Якщо план не змінюється, не додавай <plan>.
+
+Якщо пропонуєш змінити розклад у календарі, збережи мінімум 2 дні відпочинку на тиждень і не став більше 3 тренувань поспіль. Додай JSON у тегах <schedule>[...]</schedule>. Кожен елемент масиву: {"date":"YYYY-MM-DD","type":"planned"|"rest"|"missed"|"done-quick","planDayIdx":N_або_null}. Якщо розклад не змінюється, не додавай <schedule>.`;
 }
 
 window.sendMessage=async()=>{
@@ -2407,7 +2490,7 @@ function addScheduleProposal(changes){
   const preview=changes.map(c=>{
     const d=new Date(c.date+'T12:00:00');
     const dayName=plan[c.planDayIdx]?plan[c.planDayIdx].name:'';
-    return`<div style="font-size:11px;color:#92400e;margin-top:4px"><strong>${UA_DAYS[d.getDay()]} ${c.date}:</strong> ${typeLabel[c.type]||c.type}${dayName?' — '+dayName:''}</div>`;
+    return`<div style="font-size:11px;color:#92400e;margin-top:4px"><strong>${escapeHtml(UA_DAYS[d.getDay()])} ${escapeHtml(c.date)}:</strong> ${escapeHtml(typeLabel[c.type]||c.type)}${dayName?' — '+escapeHtml(dayName):''}</div>`;
   }).join('');
   div.innerHTML=`<div style="width:100%"><div class="apply-banner-text" style="margin-bottom:6px">📅 AI пропонує зміни у розкладі:</div>${preview}<div style="display:flex;gap:8px;margin-top:10px"><button class="apply-banner-btn" onclick="applyAISchedule()">Застосувати</button><button class="apply-banner-btn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent-mid)" onclick="this.closest('.apply-banner').remove();pendingSchedule=null;">Відхилити</button></div></div>`;
   el.appendChild(div);el.scrollTop=el.scrollHeight;
@@ -2428,12 +2511,19 @@ function addPlanProposal(){
   const el=document.getElementById('chatMessages');
   const div=document.createElement('div');
   div.className='apply-banner';
-  const preview=pendingPlan.map((d,i)=>`<div style="font-size:11px;color:#92400e;margin-top:4px"><strong>День ${i+1}:</strong> ${d.name} — ${d.exercises.map(e=>e.name).join(', ')}</div>`).join('');
+  const preview=pendingPlan.map((d,i)=>`<div style="font-size:11px;color:#92400e;margin-top:4px"><strong>День ${i+1}:</strong> ${escapeHtml(d.name)} — ${(d.exercises||[]).map(e=>escapeHtml(e.name)).join(', ')}</div>`).join('');
   div.innerHTML=`<div style="width:100%"><div class="apply-banner-text" style="margin-bottom:6px">AI запропонував новий план (${pendingPlan.length} днів):</div>${preview}<div style="display:flex;gap:8px;margin-top:10px"><button class="apply-banner-btn" onclick="applyAIPlan()">Застосувати</button><button class="apply-banner-btn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent-mid)" onclick="this.closest('.apply-banner').remove();pendingPlan=null;">Відхилити</button></div></div>`;
   el.appendChild(div);el.scrollTop=el.scrollHeight;
 }
-window.applyAIPlan=async()=>{if(!pendingPlan)return;userProfile.plan=pendingPlan;await setDoc(uRef('profile/data'),userProfile);pendingPlan=null;document.querySelectorAll('.apply-banner').forEach(b=>b.remove());addMsg(`План оновлено! ${userProfile.plan.length} днів збережено.`,'system');showToast('Новий план застосовано');};
-function addMsg(text,type){const el=document.getElementById('chatMessages');const div=document.createElement('div');div.className='msg-bubble msg-'+type;if(type==='ai')div.innerHTML=`<div class="msg-who">AI ТРЕНЕР</div>${text.replace(/\n/g,'<br>')}`;else if(type==='user')div.innerHTML=`<div class="msg-who">ТИ</div>${text.replace(/\n/g,'<br>')}`;else div.innerHTML=text.replace(/\n/g,'<br>');el.appendChild(div);el.scrollTop=el.scrollHeight;}
+window.applyAIPlan=async()=>{if(!pendingPlan)return;const warnings=validateTrainingPlan(pendingPlan);if(warnings.length){showToast(warnings[0],true);return;}userProfile.plan=pendingPlan;await setDoc(uRef('profile/data'),userProfile);pendingPlan=null;document.querySelectorAll('.apply-banner').forEach(b=>b.remove());addMsg(`План оновлено! ${userProfile.plan.length} днів збережено.`,'system');showToast('Новий план застосовано');};
+function addMsg(text,type){
+  const el=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='msg-bubble msg-'+type;
+  const who=type==='ai'?'AI ТРЕНЕР':type==='user'?'ТИ':'';
+  div.innerHTML=(who?`<div class="msg-who">${who}</div>`:'')+renderSafeLines(text);
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
 function addLoading(){const el=document.getElementById('chatMessages');const id='load-'+Date.now();const div=document.createElement('div');div.id=id;div.className='msg-bubble msg-ai';div.innerHTML='<div class="msg-who">AI ТРЕНЕР</div><div class="dots"><span></span><span></span><span></span></div>';el.appendChild(div);el.scrollTop=el.scrollHeight;return id;}
 function removeLoading(id){const el=document.getElementById(id);if(el)el.remove();}
 window.quickAsk=t=>{document.getElementById('chatInput').value=t;window.sendMessage();};
@@ -2502,21 +2592,11 @@ function wcDateLabel(dateStr) {
 
 function wcGetAutoScheduleForDate(dateStr) {
   const plan = getPlan(); if (!plan.length) return null;
-  // Use startDate as cycle anchor. If not set, anchor to Monday of current week.
-  let startStr = userProfile.startDate;
-  if (!startStr) {
-    const now = new Date();
-    const dow = now.getDay(); // 0=Sun
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((dow + 6) % 7));
-    startStr = monday.toISOString().slice(0, 10);
-  }
-  const start = new Date(startStr + 'T12:00:00');
   const d = new Date(dateStr + 'T12:00:00');
-  const diff = Math.round((d - start) / (1000*60*60*24));
-  // For dates before start, cycle backwards (modulo handles negatives in JS with fix)
-  const idx = ((diff % plan.length) + plan.length) % plan.length;
-  return idx;
+  const mondayIdx = (d.getDay() + 6) % 7;
+  const template = userProfile.weekTemplate || DEFAULT_WEEK_TEMPLATE;
+  const idx = template[mondayIdx];
+  return Number.isInteger(idx) && idx >= 0 && idx < plan.length ? idx : null;
 }
 
 function wcGetDayStatus(dateStr) {
@@ -2531,7 +2611,7 @@ function wcGetDayStatus(dateStr) {
   if (logged.length) return {type:'done', planDayIdx: logged[0].dayIdx ?? null, source:'log', log: logged[0]};
   // Auto-calculate from plan cycle
   const autoIdx = wcGetAutoScheduleForDate(dateStr);
-  if (autoIdx === null) return {type:'none', planDayIdx:null, source:'auto'};
+  if (autoIdx === null) return {type:'rest', planDayIdx:null, source:'auto'};
   // Past days without a log = missed; today and future = planned
   if (dateStr < today) return {type:'missed', planDayIdx:autoIdx, source:'auto'};
   return {type:'planned', planDayIdx:autoIdx, source:'auto'};
